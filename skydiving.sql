@@ -376,3 +376,19 @@ INSERT INTO students (cource_id, student_first_name, student_second_name, studen
 (7, 'Kingston', 'Cunningham', '2002-12-12', 'male', '+375291234665', 'expert', '2023-08-09', '2023-11-09', 'closed'),
 (1, 'Athena', 'Pearson', '2000-02-29', 'female', '+375291234666', 'master', '2023-08-10', '2023-11-10', 'closed'),
 (2, 'Emerson', 'Hunter', '2001-04-17', 'male', '+375291234667', 'beginner', '2023-08-11', '2023-11-11', 'closed');
+
+SELECT student_id, student_first_name, student_second_name FROM students
+INNER JOIN cources
+ON students.cource_id = cources.cource_id
+WHERE cources.cource_name = 'Basic Freefall Skills';
+
+SELECT * FROM students;
+
+SELECT cource_name, average_age.age FROM cources
+INNER JOIN
+(
+	SELECT cource_id, AVG(TIMESTAMPDIFF(YEAR, student_birthday, CURDATE())) AS age 
+	FROM students
+	GROUP BY cource_id
+) as average_age
+ON cources.cource_id = average_age.cource_id;
