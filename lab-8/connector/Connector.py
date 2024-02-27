@@ -43,7 +43,7 @@ class Connector:
         columns = df.columns.tolist()
         return column in columns
 
-    def get_list_data(self, table):
+    def get_list_data(self, table, return_none_if_fails=False):
         try:
             if self._is_valid_table_name(table):
                 cursor = self.connection.cursor()
@@ -57,9 +57,14 @@ class Connector:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except TableNameMismatch as e:
             print(f"Error: {e}")
-            return []
+            if return_none_if_fails:
+                return None
+            else:
+                return []
 
-    def get_df_data(self, table, index_column, return_df_if_index_column_fails=False):
+    def get_df_data(self, table, index_column,
+                    return_df_if_index_column_fails=True,
+                    return_none_if_table_or_index_fails=False):
         try:
             if self._is_valid_table_name(table):
                 query = f"SELECT * FROM {table}"
@@ -73,7 +78,10 @@ class Connector:
             if isinstance(e, ColumnNameMismatch) and return_df_if_index_column_fails:
                 return df
             else:
-                return pd.DataFrame()
+                if return_none_if_table_or_index_fails:
+                    return None
+                else:
+                    return pd.DataFrame()
 
     @staticmethod
     def set_primary_key_as_df_index(df, column):
