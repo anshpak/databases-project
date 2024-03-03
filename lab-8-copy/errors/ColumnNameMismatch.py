@@ -1,4 +1,0 @@
-
-
-class ColumnNameMismatch(Exception):
-    ...

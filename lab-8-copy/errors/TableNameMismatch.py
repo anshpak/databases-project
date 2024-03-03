@@ -1,3 +1,0 @@
-
-class TableNameMismatch(Exception):
-    ...
