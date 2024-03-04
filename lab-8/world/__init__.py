@@ -24,7 +24,8 @@ if __name__ == "__main__":
     # without the next line somehow indexes in two dataframes are mixed
     capitals_and_their_countries_population_df = capitals_df.merge(country_df.dropna(subset=["Capital"]),
                                                                    left_on="CountryCode",
-                                                                   right_index=True)[["Name", "Population_x", "Population_y"]]
+                                                                   right_index=True)[
+        ["Name", "Population_x", "Population_y"]]
     average_country_population_df = pd.DataFrame(
         {"Average Population": capitals_and_their_countries_population_df.Population_y /
                                city_df.groupby(["CountryCode"]).size()})
@@ -40,6 +41,15 @@ if __name__ == "__main__":
 
     # 5. Get countries in which people who speak unofficial languages are more than average population in 5
     # top cities of those countries.
-
-
+    countries_with_five_or_more_cities_df = (country_df.merge(city_df, left_index=True, right_on="CountryCode")
+                                             .groupby(["CountryCode"]).size())
+    countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df[countries_with_five_or_more_cities_df >= 5]
+    countries_with_five_or_more_cities_df = country_df.loc[countries_with_five_or_more_cities_df.index][["Name", "Population"]]
+    countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df.merge(city_df, left_index=True,
+                                                                                        right_on="CountryCode")
+    countries_with_five_or_more_cities_df = (countries_with_five_or_more_cities_df.groupby(["Name_x"])
+                                             .apply(lambda x: x.sort_values(by="Population_y", ascending=False)))
+    countries_with_five_or_more_cities_df.rename(columns={'Name_x': 'CountryName'}, inplace=True)
+    countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df.groupby("CountryName").head(5)
+    print(countries_with_five_or_more_cities_df.groupby("CountryName").sum().Population_y / 5)
     connector.disconnect()
