@@ -1,13 +1,16 @@
 import mysql.connector
 
+from patterns.SingletonMeta import SingletonMeta
 
-class Connector:
-    def __init__(self, host, user, password, database):
+
+class Connector(metaclass=SingletonMeta):
+    def __init__(self, host, user, password, database, singleton_check):
         self.host = host
         self.user = user
         self.password = password
         self.database = database
         self.connection = None
+        self.singleton_check = singleton_check
 
     def connect(self, successful_report=False):
         try:
@@ -25,3 +28,4 @@ class Connector:
     def disconnect(self):
         if self.connection:
             self.connection.close()
+        SingletonMeta.delete_instance(Connector)

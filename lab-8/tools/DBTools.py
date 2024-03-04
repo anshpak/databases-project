@@ -23,11 +23,17 @@ class DBTools:
     def get_list_data(connector, table, return_none_if_fails=False):
         try:
             if DBTools._is_valid_table_name(connector, table):
+                connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 query = f"SELECT * FROM {table}"
                 cursor.execute(query)
-                data = cursor.fetchall()
-                lists = [list(row) for row in data]
+                # data = cursor.fetchall()
+                # lists = [list(row) for row in data]
+                lists = []
+                row = cursor.fetchone()
+                while row is not None:
+                    lists += list(row)
+                    row = cursor.fetchone()
                 cursor.close()
                 return lists
             else:
@@ -46,6 +52,7 @@ class DBTools:
         try:
             if DBTools._is_valid_table_name(connector, table):
                 query = f"SELECT * FROM {table}"
+                connector.connection.reset_session()
                 df = pd.read_sql_query(query, connector.connection)
                 DBTools.set_primary_key_as_df_index(df, index_column)
                 return df
