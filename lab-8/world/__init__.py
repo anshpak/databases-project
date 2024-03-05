@@ -43,8 +43,10 @@ if __name__ == "__main__":
     # top cities of those countries.
     countries_with_five_or_more_cities_df = (country_df.merge(city_df, left_index=True, right_on="CountryCode")
                                              .groupby(["CountryCode"]).size())
-    countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df[countries_with_five_or_more_cities_df >= 5]
-    countries_with_five_or_more_cities_df = country_df.loc[countries_with_five_or_more_cities_df.index][["Name", "Population"]]
+    countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df[
+        countries_with_five_or_more_cities_df >= 5]
+    countries_with_five_or_more_cities_df = country_df.loc[countries_with_five_or_more_cities_df.index][
+        ["Name", "Population"]]
     countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df.merge(city_df, left_index=True,
                                                                                         right_on="CountryCode")
     countries_with_five_or_more_cities_df = (countries_with_five_or_more_cities_df.groupby(["Name_x"])
@@ -52,4 +54,16 @@ if __name__ == "__main__":
     countries_with_five_or_more_cities_df.rename(columns={'Name_x': 'CountryName'}, inplace=True)
     countries_with_five_or_more_cities_df = countries_with_five_or_more_cities_df.groupby("CountryName").head(5)
     print(countries_with_five_or_more_cities_df.groupby("CountryName").sum().Population_y / 5)
+    unofficial_languages_df = (country_language_df[country_language_df.IsOfficial == "F"][["Percentage"]]
+                               .groupby(["CountryCode"]).sum())
+    unofficial_languages_df = unofficial_languages_df.merge(country_df, left_index=True, right_index=True)[
+        ["Population", "Percentage", "Name"]]
+    unofficial_languages_df["Population"] = (unofficial_languages_df.Population *
+                                             (unofficial_languages_df.Percentage / 100))
+    unofficial_languages_df = unofficial_languages_df.merge(
+        countries_with_five_or_more_cities_df.groupby("CountryName").sum().Population_y / 5,
+        left_on="Name", right_index=True)
+    unofficial_languages_df = unofficial_languages_df.loc[unofficial_languages_df.Population > unofficial_languages_df.Population_y][["Name"]]
+    print(', '.join(unofficial_languages_df["Name"]))
+
     connector.disconnect()
