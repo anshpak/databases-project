@@ -1,7 +1,11 @@
+import csv
+
 import pandas as pd
 
 from errors.ColumnNameMismatch import ColumnNameMismatch
 from errors.TableNameMismatch import TableNameMismatch
+
+from csv import reader
 
 
 class DBTools:
@@ -27,15 +31,15 @@ class DBTools:
                 cursor = connector.connection.cursor()
                 query = f"SELECT * FROM {table}"
                 cursor.execute(query)
-                # data = cursor.fetchall()
+                data = cursor.fetchall()
                 # lists = [list(row) for row in data]
-                lists = []
-                row = cursor.fetchone()
-                while row is not None:
-                    lists += list(row)
-                    row = cursor.fetchone()
+                # lists = []
+                # row = cursor.fetchone()
+                # while row is not None:
+                #     lists += list(row)
+                #     row = cursor.fetchone()
                 cursor.close()
-                return lists
+                return data
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except TableNameMismatch as e:
@@ -74,3 +78,15 @@ class DBTools:
             df.set_index(column, inplace=True)
         else:
             raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
+
+    @staticmethod
+    def table_to_csv(connector, table):
+        try:
+            connector.connection.reset_session()
+            data = DBTools.get_list_data(connector, table)
+            with open("test.csv", "w") as f:
+                writer = csv.writer(f, lineterminator="\n")
+                for tup in data:
+                    writer.writerow(tup)
+        except Exception as e:
+            print(e)

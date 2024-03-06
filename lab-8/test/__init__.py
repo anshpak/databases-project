@@ -10,4 +10,5 @@ if __name__ == "__main__":
     #                                      return_df_if_index_column_fails=True,
     #                                      return_none_if_table_or_index_fails=False)
     # print(equipment_df)
+    DBTools.table_to_csv(connector, "equipment")
     connector.disconnect()
