@@ -1,4 +1,5 @@
 import csv
+import json
 
 import pandas as pd
 
@@ -80,13 +81,60 @@ class DBTools:
             raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
 
     @staticmethod
-    def table_to_csv(connector, table):
+    def table_to_csv(connector, table, path):
         try:
-            connector.connection.reset_session()
-            data = DBTools.get_list_data(connector, table)
-            with open("test.csv", "w") as f:
-                writer = csv.writer(f, lineterminator="\n")
-                for tup in data:
-                    writer.writerow(tup)
+            if DBTools._is_valid_table_name(connector, table):
+                connector.connection.reset_session()
+                data = DBTools.get_list_data(connector, table)
+                with open(f"{path}{table}.csv", "w") as f:
+                    writer = csv.writer(f, lineterminator="\n")
+                    for tup in data:
+                        writer.writerow(tup)
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
+
+    @staticmethod
+    def table_to_json(connector, table, path):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                connector.connection.reset_session()
+                cursor = connector.connection.cursor()
+                query = f"SELECT * FROM {table}"
+                cursor.execute(query)
+                json_data = json.dumps(cursor.fetchall())
+                with open(f"{path}{table}.json", "w") as f:
+                    f.write(json_data)
+                cursor.close()
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    @staticmethod
+    def get_column_names_as_tuple(connector, table):
+        connector.connection.reset_session()
+        cursor = connector.connection.cursor()
+        query = f"SELECT * FROM {table}"
+        cursor.execute(query)
+        columns = (column[0] for column in cursor.description)
+        cursor.close()
+        return columns
+
+    @staticmethod
+    def insert_one_into_table(connector, table, *args):
+        try:
+            if DBTools._is_valid_table_name(connector,table):
+                connector.connection.reset_session()
+                cursor = connector.connection.cursor()
+                parameters = tuple(["%s" for _ in range(len(args) - 1)])
+                query = f"INSERT INTO {table} () VALUES {parameters})"
+                values = ("employees", "Alex", "Kushnerow", "system-analyst", "+375446749823")
+                cursor.execute(query, values)
+                cursor.close()
+                connector.connection.commit()
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except TableNameMismatch as e:
+            print(f"Error: {e}")

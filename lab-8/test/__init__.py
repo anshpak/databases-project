@@ -10,5 +10,8 @@ if __name__ == "__main__":
     #                                      return_df_if_index_column_fails=True,
     #                                      return_none_if_table_or_index_fails=False)
     # print(equipment_df)
-    DBTools.table_to_csv(connector, "equipment")
+    DBTools.table_to_csv(connector, "employees", "../backups/")
+    # DBTools.table_to_json(connector, "employees", "../backups/")
+    DBTools.insert_one_into_table(connector, "employees", "Alex", "Kushnerow",
+                                  "system-analyst", "+375446749823")
     connector.disconnect()
