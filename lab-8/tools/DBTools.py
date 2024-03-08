@@ -113,28 +113,79 @@ class DBTools:
             print(f"Error: {e}")
 
     @staticmethod
-    def get_column_names_as_tuple(connector, table):
+    def _get_column_names_as_tuple(connector, table):
         connector.connection.reset_session()
         cursor = connector.connection.cursor()
-        query = f"SELECT * FROM {table}"
+        query = f"SELECT * FROM {table} LIMIT 1"
         cursor.execute(query)
-        columns = (column[0] for column in cursor.description)
+        columns = tuple([column[0] for column in cursor.description][1:])
+        cursor.fetchone()
         cursor.close()
         return columns
 
     @staticmethod
+    def _get_column_names_as_string(connector, table):
+        connector.connection.reset_session()
+        cursor = connector.connection.cursor()
+        query = f"SELECT * FROM {table} LIMIT 1"
+        cursor.execute(query)
+        columns = ", ".join([column[0] for column in cursor.description][1:])
+        cursor.fetchone()
+        cursor.close()
+        return columns
+
+    @staticmethod
+    def _get_primary_key_name(connector, table):
+        connector.connection.reset_session()
+        cursor = connector.connection.cursor()
+        command = f"SHOW KEYS FROM {table} WHERE KEY_NAME = 'PRIMARY'"
+        cursor.execute(command)
+        keys = cursor.fetchall()
+        cursor.close()
+        return [key[4] for key in keys]
+
+    @staticmethod
     def insert_one_into_table(connector, table, *args):
         try:
-            if DBTools._is_valid_table_name(connector,table):
+            if DBTools._is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
-                parameters = tuple(["%s" for _ in range(len(args) - 1)])
-                query = f"INSERT INTO {table} () VALUES {parameters})"
-                values = ("employees", "Alex", "Kushnerow", "system-analyst", "+375446749823")
-                cursor.execute(query, values)
+                parameters = ", ".join(["%s" for _ in range(len(args))])
+                columns = DBTools._get_column_names_as_string(connector, table)
+                query = "INSERT INTO employees (" + columns + ") VALUES (" + parameters + ")"
+                cursor.execute(query, args)
                 cursor.close()
                 connector.connection.commit()
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    @staticmethod
+    def delete_one_from_table(connector, table, *index):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                if isinstance(index[0], tuple) or isinstance(index[0], list):
+                    index = index[0]
+                primary_key = DBTools._get_primary_key_name(connector, table)
+                if len(index) == 1:
+                    parametric_str = primary_key[0]
+                else:
+                    parametric_str = primary_key[0] + " = %s" + "".join([" AND " + key + " = %s" for key in primary_key[1:]])
+                connector.connection.reset_session()
+                cursor = connector.connection.cursor()
+                query = "DELETE FROM " + table + " WHERE " + parametric_str
+                cursor.execute(query, index)
+                cursor.close()
+                connector.connection.commit()
+        except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    @staticmethod
+    def delete_many_from_table(connector, table, indexes):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                for index in indexes:
+                    DBTools.delete_one_from_table(connector, table, index)
         except TableNameMismatch as e:
             print(f"Error: {e}")

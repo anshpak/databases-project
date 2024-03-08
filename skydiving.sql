@@ -8,23 +8,24 @@ CREATE TABLE employees (
 	employee_name VARCHAR(20),
     employee_surname VARCHAR(20),
     employee_position ENUM('skydiving-instructor', 'safety-instructor', 'trainer', 'manager', 'mechanic', 'pilot'),
-    contact_info VARCHAR(13)
+    contact_info VARCHAR(14)
 );
 
 INSERT INTO employees (employee_name, employee_surname, employee_position, contact_info) VALUES
-('Ivan', 'Petrov', 'skydiving-instructor', '+3754567890'),
-('Maria', 'Ivanova', 'skydiving-instructor', '+3757654321'),
-('Alexey', 'Smirnov', 'safety-instructor', '+3757902468'),
-('Elena', 'Kozlova', 'safety-instructor', '+3758013579'),
-('Sergey', 'Nikolaev', 'trainer', '+3752581470'),
-('Olga', 'Stepanova', 'trainer', '+3752583690'),
-('Dmitriy', 'Kovalev', 'manager', '+3753691470'),
-('Anna', 'Semenova', 'manager', '+3757538246'),
-('Pavel', 'Morozov', 'mechanic', '+3759518246'),
-('Natalia', 'Fedorova', 'mechanic', '+3756159370'),
-('Alexander', 'Kuznetsov', 'pilot', '+3759370824'),
-('Lyudmila', 'Ivanova', 'pilot', '+3750824615');
+('Ivan', 'Petrov', 'skydiving-instructor', '+375456789034'),
+('Maria', 'Ivanova', 'skydiving-instructor', '+375765432167'),
+('Alexey', 'Smirnov', 'safety-instructor', '+375790246877'),
+('Elena', 'Kozlova', 'safety-instructor', '+375801357923'),
+('Sergey', 'Nikolaev', 'trainer', '+375258147089'),
+('Olga', 'Stepanova', 'trainer', '+375258369076'),
+('Dmitriy', 'Kovalev', 'manager', '+375369147064'),
+('Anna', 'Semenova', 'manager', '+375753824639'),
+('Pavel', 'Morozov', 'mechanic', '+375951824622'),
+('Natalia', 'Fedorova', 'mechanic', '+375615937011'),
+('Alexander', 'Kuznetsov', 'pilot', '+375937082469'),
+('Lyudmila', 'Ivanova', 'pilot', '+375082461529');
 
+DROP TABLE IF EXISTS contracts;
 CREATE TABLE contracts (
 	contract_id TINYINT UNSIGNED AUTO_INCREMENT,
 	contract_start_date DATE,
@@ -392,3 +393,6 @@ INNER JOIN
 	GROUP BY cource_id
 ) as average_age
 ON cources.cource_id = average_age.cource_id;
+
+
+SELECT * FROM employees;
