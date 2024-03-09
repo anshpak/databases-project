@@ -263,18 +263,17 @@ DROP TABLE IF EXISTS student_groups;
 CREATE TABLE student_groups(
 	group_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     cource_id TINYINT UNSIGNED,
-    employee_id TINYINT UNSIGNED,
     group_name VARCHAR(1)
 );
 
-INSERT INTO student_group
-(cource_id, employee_id, group_name)
+INSERT INTO student_groups
+(cource_id, group_name)
 VALUES
-(1, 2, "A"),
-(3, 5, "B"),
-(5, 4, "C"),
-(6, 6, "D"),
-(7, 5, "E");
+(1, "A"),
+(3, "B"),
+(5, "C"),
+(6, "D"),
+(7, "E");
 
 DROP TABLE IF EXISTS students;
 CREATE TABLE students (
@@ -394,6 +393,29 @@ INSERT INTO students (cource_id, student_first_name, student_second_name, studen
 (5, 'Kingston', 'Cunningham', '2002-12-12', 'male', '+375291234665', 'expert', '2023-08-09', '2023-11-09', 'closed'),
 (5, 'Athena', 'Pearson', '2000-02-29', 'female', '+375291234666', 'master', '2023-08-10', '2023-11-10', 'closed'),
 (5, 'Emerson', 'Hunter', '2001-04-17', 'male', '+375291234667', 'beginner', '2023-08-11', '2023-11-11', 'closed');
+
+DROP TABLE IF EXISTS study_week;
+CREATE TABLE study_week(
+	study_day ENUM("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday") PRIMARY KEY
+);
+
+INSERT INTO study_week
+(study_day)
+VALUES
+("Monday"),
+("Tuesday"),
+("Wednesday"),
+("Thursday"),
+("Friday"),
+("Saturday"),
+("Sunday");
+
+DROP TABLE IF EXISTS schedule;
+CREATE TABLE schedule(
+	study_day ENUM("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
+    group_id TINYINT UNSIGNED,
+    
+);
 
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(

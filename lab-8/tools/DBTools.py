@@ -161,6 +161,8 @@ class DBTools:
 
     @staticmethod
     def insert_one_into_table(connector, table, *args):
+        if isinstance(args[0], tuple) or isinstance(args[0], list):
+            args = tuple(args[0])
         try:
             if DBTools._is_valid_table_name(connector, table):
                 connector.connection.reset_session()
@@ -242,4 +244,28 @@ class DBTools:
         except (TableNameMismatch, ColumnNameMismatch) as e:
             print(f"Error: {e}")
 
+    @staticmethod
+    def import_from_csv(connector, table, path, filename):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                with open(f"{path}{filename}.csv", "r") as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        DBTools.insert_one_into_table(connector, table, row)
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except Exception as e:
+            print(f"Error: {e}")
 
+    @staticmethod
+    def import_from_json(connector, table, path, filename):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                with open(f"{path}{filename}.json", "r") as f:
+                    data = json.load(f)
+                    for row in data:
+                        DBTools.insert_one_into_table(connector, table, row)
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except Exception as e:
+            print(f"Error: {e}")
