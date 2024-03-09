@@ -6,8 +6,6 @@ import pandas as pd
 from errors.ColumnNameMismatch import ColumnNameMismatch
 from errors.TableNameMismatch import TableNameMismatch
 
-from csv import reader
-
 
 class DBTools:
     @staticmethod
@@ -20,7 +18,12 @@ class DBTools:
         return table in tables
 
     @staticmethod
-    def _is_valid_df_table_name(df, column):
+    def _is_valid_column_name(connector, table, column):
+        columns = DBTools._get_column_names_as_tuple(connector, table)
+        return column in columns
+
+    @staticmethod
+    def _is_valid_df_column_name(df, column):
         columns = df.columns.tolist()
         return column in columns
 
@@ -75,7 +78,7 @@ class DBTools:
 
     @staticmethod
     def set_primary_key_as_df_index(df, column):
-        if DBTools._is_valid_df_table_name(df, column):
+        if DBTools._is_valid_df_column_name(df, column):
             df.set_index(column, inplace=True)
         else:
             raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
@@ -118,7 +121,7 @@ class DBTools:
         cursor = connector.connection.cursor()
         query = f"SELECT * FROM {table} LIMIT 1"
         cursor.execute(query)
-        columns = tuple([column[0] for column in cursor.description][1:])
+        columns = tuple([column[0] for column in cursor.description])
         cursor.fetchone()
         cursor.close()
         return columns
@@ -129,7 +132,7 @@ class DBTools:
         cursor = connector.connection.cursor()
         query = f"SELECT * FROM {table} LIMIT 1"
         cursor.execute(query)
-        columns = ", ".join([column[0] for column in cursor.description][1:])
+        columns = ", ".join([column[0] for column in cursor.description])
         cursor.fetchone()
         cursor.close()
         return columns
@@ -145,15 +148,34 @@ class DBTools:
         return [key[4] for key in keys]
 
     @staticmethod
+    def _get_auto_increment_column(connector, table):
+        cursor = connector.connection.cursor()
+        cursor.execute(f"SHOW COLUMNS FROM {table}")
+        columns_info = cursor.fetchall()
+        cursor.close()
+        res = ""
+        for info in columns_info:
+            if info[5] == "auto_increment":
+                res = info[0]
+        return res
+
+    @staticmethod
     def insert_one_into_table(connector, table, *args):
         try:
             if DBTools._is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 parameters = ", ".join(["%s" for _ in range(len(args))])
-                columns = DBTools._get_column_names_as_string(connector, table)
-                query = "INSERT INTO employees (" + columns + ") VALUES (" + parameters + ")"
-                cursor.execute(query, args)
+                columns = DBTools._get_column_names_as_tuple(connector, table)
+                if len(columns) == len(args):
+                    columns = DBTools._get_column_names_as_string(connector, table)
+                    query = f"INSERT INTO {table} (" + columns + ") VALUES (" + parameters + ")"
+                    cursor.execute(query, args)
+                else:
+                    auto_incremented_column = DBTools._get_auto_increment_column(connector, table)
+                    columns = ", ".join([column for column in columns if column != auto_incremented_column])
+                    query = f"INSERT INTO {table} (" + columns + ") VALUES (" + parameters + ")"
+                    cursor.execute(query, args)
                 cursor.close()
                 connector.connection.commit()
             else:
@@ -178,6 +200,8 @@ class DBTools:
                 cursor.execute(query, index)
                 cursor.close()
                 connector.connection.commit()
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except TableNameMismatch as e:
             print(f"Error: {e}")
 
@@ -187,5 +211,35 @@ class DBTools:
             if DBTools._is_valid_table_name(connector, table):
                 for index in indexes:
                     DBTools.delete_one_from_table(connector, table, index)
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except TableNameMismatch as e:
             print(f"Error: {e}")
+
+    @staticmethod
+    def update_one_in_table(connector, table, data, *index):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                for column in data:
+                    if not DBTools._is_valid_column_name(connector, table, column):
+                        raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
+                parametric_str1 = ", ".join([column + " = %s" for column in data])
+                primary_key = DBTools._get_primary_key_name(connector, table)
+                if len(index) == 1:
+                    parametric_str2 = primary_key[0]
+                else:
+                    parametric_str2 = primary_key[0] + " = %s" + "".join(
+                        [" AND " + key + " = %s" for key in primary_key[1:]])
+                data_and_index = tuple(data.values()) + index
+                connector.connection.reset_session()
+                cursor = connector.connection.cursor()
+                query = f"UPDATE {table} SET {parametric_str1} WHERE {parametric_str2}"
+                cursor.execute(query, data_and_index)
+                connector.connection.commit()
+                cursor.close()
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except (TableNameMismatch, ColumnNameMismatch) as e:
+            print(f"Error: {e}")
+
+

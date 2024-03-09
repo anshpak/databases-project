@@ -12,7 +12,10 @@ if __name__ == "__main__":
     # print(equipment_df)
     # DBTools.table_to_csv(connector, "employees", "../backups/")
     # DBTools.table_to_json(connector, "employees", "../backups/")
-    # DBTools.insert_one_into_table(connector, "employees", "Alex5", "Kushnerow5",
-    #                               "trainer", "+375446749823")
+    # DBTools.insert_one_into_table(connector, "test", 100, 1, 1., 1., 1., "CHAR(20)", "VARCHAR(20)", "TEXT",
+    #                               "2023-03-09", "15:00:00", "2023-03-09 15:00:00", "2023-03-09 15:00:00", 1,
+    #                               "X'62696E6172795F64617461'", "binary", "one,two", "one")
+
+    # DBTools.update_one_in_table(connector, "test", {"data1": 200}, 2, 2)
 
     connector.disconnect()
