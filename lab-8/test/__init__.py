@@ -18,5 +18,6 @@ if __name__ == "__main__":
 
     # DBTools.update_one_in_table(connector, "test", {"data1": 200}, 2, 2)
     # DBTools.import_from_csv(connector, "employees", "../src/", "temp-data")
-    DBTools.import_from_json(connector, "employees", "../src/", "temp-data")
+    # DBTools.import_from_json(connector, "employees", "../src/", "temp-data")
+    DBTools.synch_with_csv(connector, "employees", "../backups/", "employees")
     connector.disconnect()

@@ -222,13 +222,15 @@ class DBTools:
     def update_one_in_table(connector, table, data, *index):
         try:
             if DBTools._is_valid_table_name(connector, table):
+                if isinstance(index[0], tuple) or isinstance(index[0], list):
+                    index = tuple(index[0])
                 for column in data:
                     if not DBTools._is_valid_column_name(connector, table, column):
                         raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
                 parametric_str1 = ", ".join([column + " = %s" for column in data])
                 primary_key = DBTools._get_primary_key_name(connector, table)
                 if len(index) == 1:
-                    parametric_str2 = primary_key[0]
+                    parametric_str2 = primary_key[0] + " = %s"
                 else:
                     parametric_str2 = primary_key[0] + " = %s" + "".join(
                         [" AND " + key + " = %s" for key in primary_key[1:]])
@@ -264,6 +266,44 @@ class DBTools:
                 with open(f"{path}{filename}.json", "r") as f:
                     data = json.load(f)
                     for row in data:
+                        DBTools.insert_one_into_table(connector, table, row)
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except Exception as e:
+            print(f"Error: {e}")
+
+    @staticmethod
+    def synch_with_csv(connector, table, path, filename):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                data_from_table = DBTools.get_list_data(connector, table)
+                with open(f"{path}{filename}.csv", "r") as f:
+                    reader = csv.reader(f)
+                    counter = 0
+                    for csv_row, table_row in zip(reader, data_from_table):
+                        counter += 1
+                        table_row = [str(data) for data in table_row]
+                        if csv_row != table_row:
+                            columns = DBTools._get_column_names_as_tuple(connector, table)
+                            primary_key = DBTools._get_primary_key_name(connector, table)
+                            position = []
+                            for column in columns:
+                                if column in primary_key:
+                                    position += [columns.index(column)]
+                            keys = []
+                            values = []
+                            index = []
+                            for pos in range(len(csv_row)):
+                                if pos not in position:
+                                    keys += [columns[pos]]
+                                    values += [csv_row[pos]]
+                                else:
+                                    index += csv_row[pos]
+                            DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), index)
+                with open(f"{path}{filename}.csv", "r") as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        counter += 1
                         DBTools.insert_one_into_table(connector, table, row)
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
