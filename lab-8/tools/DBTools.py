@@ -190,10 +190,10 @@ class DBTools:
         try:
             if DBTools._is_valid_table_name(connector, table):
                 if isinstance(index[0], tuple) or isinstance(index[0], list):
-                    index = index[0]
+                    index = tuple(index[0])
                 primary_key = DBTools._get_primary_key_name(connector, table)
                 if len(index) == 1:
-                    parametric_str = primary_key[0]
+                    parametric_str = primary_key[0] + " = %s"
                 else:
                     parametric_str = primary_key[0] + " = %s" + "".join([" AND " + key + " = %s" for key in primary_key[1:]])
                 connector.connection.reset_session()
@@ -277,34 +277,58 @@ class DBTools:
         try:
             if DBTools._is_valid_table_name(connector, table):
                 data_from_table = DBTools.get_list_data(connector, table)
+                primary_key = DBTools._get_primary_key_name(connector, table)
                 with open(f"{path}{filename}.csv", "r") as f:
                     reader = csv.reader(f)
                     counter = 0
+                    deleted_rows = 0
                     for csv_row, table_row in zip(reader, data_from_table):
                         counter += 1
                         table_row = [str(data) for data in table_row]
-                        if csv_row != table_row:
+                        if csv_row != table_
                             columns = DBTools._get_column_names_as_tuple(connector, table)
-                            primary_key = DBTools._get_primary_key_name(connector, table)
+
                             position = []
                             for column in columns:
                                 if column in primary_key:
                                     position += [columns.index(column)]
                             keys = []
                             values = []
-                            index = []
+                            index_table = []
+                            index_csv = []
                             for pos in range(len(csv_row)):
-                                if pos not in position:
-                                    keys += [columns[pos]]
-                                    values += [csv_row[pos]]
-                                else:
-                                    index += csv_row[pos]
-                            DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), index)
+                                keys += [columns[pos]]
+                                values += [csv_row[pos]]
+                            for pos in range(len(csv_row)):
+                                if pos in position:
+                                    index_csv += [csv_row[pos]]
+                            for pos in range(len(table_row)):
+                                if pos in position:
+                                    index_table += [table_row[pos]]
+                            if index_csv != index_table:
+                                # DBTools.delete_one_from_table(connector, table, index_csv)
+                                DBTools.update_one_in_table(connector, table, dict(zip(primary_key,
+                                                                                    [ind + "1" for ind in index_csv])),
+                                                            index_csv)
+                                deleted_rows += 1
+                            DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), index_table)
                 with open(f"{path}{filename}.csv", "r") as f:
                     reader = csv.reader(f)
+                    for i in range(counter):
+                        f.readline()
+
                     for row in reader:
-                        counter += 1
                         DBTools.insert_one_into_table(connector, table, row)
+                if len(data_from_table) > counter:
+                    cursor = connector.connection.cursor()
+                    query = f"""
+                    DELETE FROM {table}
+                    ORDER BY {primary_key[0]} DESC
+                    LIMIT %s;
+                    """
+                    cursor.execute(query, (len(data_from_table) - counter - deleted_rows,))
+                    connector.connection.commit()
+                    cursor.close()
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except Exception as e:

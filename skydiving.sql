@@ -31,7 +31,7 @@ CREATE TABLE contracts (
 	contract_start_date DATE,
     contract_end_date DATE,
     employee_salary DECIMAL(6, 2),
-    constraint employee_contract foreign key (contract_id) references employees(employee_id)
+    CONSTRAINT employee_contract FOREIGN KEY (contract_id) REFERENCES employees(employee_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO contracts (contract_start_date, contract_end_date, employee_salary) VALUES
@@ -288,10 +288,10 @@ CREATE TABLE students (
     enrollment_date DATE,
     completion_date DATE,
     status ENUM ('active', 'closed', 'expelled'),
-    constraint cource_student foreign key (cource_id) references cources(cource_id)
+    constraint group_student foreign key (group_id) references student_groups(group_id)
 );
 
-INSERT INTO students (cource_id, student_first_name, student_second_name, student_birthday, student_sex, student_contact_info, student_level, enrollment_date, completion_date, status) VALUES
+INSERT INTO students (group_id, student_first_name, student_second_name, student_birthday, student_sex, student_contact_info, student_level, enrollment_date, completion_date, status) VALUES
 (1, 'Alice', 'Smith', '2000-03-15', 'female', '+375291234567', 'beginner', '2023-05-01', '2023-11-01', 'closed'),
 (1, 'Bob', 'Johnson', '2001-05-20', 'male', '+375291234568', 'intermediate', '2023-05-02', '2023-11-02', 'closed'),
 (1, 'Charlie', 'Brown', '1999-09-10', 'male', '+375291234569', 'advanced', '2023-05-03', '2023-11-03', 'closed'),
@@ -394,28 +394,7 @@ INSERT INTO students (cource_id, student_first_name, student_second_name, studen
 (5, 'Athena', 'Pearson', '2000-02-29', 'female', '+375291234666', 'master', '2023-08-10', '2023-11-10', 'closed'),
 (5, 'Emerson', 'Hunter', '2001-04-17', 'male', '+375291234667', 'beginner', '2023-08-11', '2023-11-11', 'closed');
 
-DROP TABLE IF EXISTS study_week;
-CREATE TABLE study_week(
-	study_day ENUM("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday") PRIMARY KEY
-);
 
-INSERT INTO study_week
-(study_day)
-VALUES
-("Monday"),
-("Tuesday"),
-("Wednesday"),
-("Thursday"),
-("Friday"),
-("Saturday"),
-("Sunday");
-
-DROP TABLE IF EXISTS schedule;
-CREATE TABLE schedule(
-	study_day ENUM("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
-    group_id TINYINT UNSIGNED,
-    
-);
 
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(
@@ -440,3 +419,5 @@ CREATE TABLE test(
 );
 
 SELECT * FROM test;
+
+SELECT * FROM employees;
