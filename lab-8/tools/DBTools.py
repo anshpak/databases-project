@@ -283,9 +283,11 @@ class DBTools:
                     counter = 0
                     deleted_rows = 0
                     for csv_row, table_row in zip(reader, data_from_table):
+                    # for csv_row in reader:
+                        # table_row = [sublist for sublist in data_from_table if sublist[0] == csv_row[0]]
                         counter += 1
                         table_row = [str(data) for data in table_row]
-                        if csv_row != table_
+                        if csv_row != table_row:
                             columns = DBTools._get_column_names_as_tuple(connector, table)
 
                             position = []
