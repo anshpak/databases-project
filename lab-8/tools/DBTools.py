@@ -383,3 +383,49 @@ class DBTools:
                             DBTools.delete_one_from_table(connector, table, key)
         except TableNameMismatch as e:
             print(f"Error: {e}")
+
+    @staticmethod
+    def synch_with_json(connector, table, path, filename):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                data_pool_from_table = DBTools.get_list_data(connector, table)
+                columns = DBTools._get_column_names_as_tuple(connector, table)
+                primary_key = DBTools._get_primary_key_name(connector, table)
+                primary_key_position = []
+                interacted_indexes = []
+                for column in columns:
+                    if column in primary_key:
+                        primary_key_position += [columns.index(column)]
+                row_pool_key = [[] for _ in range(len(data_pool_from_table))]
+                counter = 0
+                for row_pool in data_pool_from_table:
+                    for index in primary_key_position:
+                        row_pool_key[counter] += [str(row_pool[index])]
+                        counter += 1
+                with open(f"{path}{filename}.json", "r") as f:
+                    reader = json.load(f)
+                    for row in reader:
+                        row_reader_key = []
+                        for index in primary_key_position:
+                            row_reader_key += [str(row[index])]
+                        if row_reader_key in row_pool_key:
+                            row_pool = [str(data) for data in data_pool_from_table[row_pool_key.index(row_reader_key)]]
+                            if row != row_pool:
+                                for pos in range(len(row)):
+                                    keys = []
+                                    values = []
+                                    keys += [columns[pos]]
+                                    values += [row[pos]]
+                                DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), row_reader_key)
+                            interacted_indexes += [row_reader_key]
+                        else:
+                            values = []
+                            for pos in range(len(row)):
+                                values += [row[pos]]
+                            DBTools.insert_one_into_table(connector, table, values)
+                            interacted_indexes += [row_reader_key]
+                    for key in row_pool_key:
+                        if key not in interacted_indexes:
+                            DBTools.delete_one_from_table(connector, table, key)
+        except TableNameMismatch as e:
+            print(f"Error: {e}")

@@ -34,11 +34,10 @@ if __name__ == "__main__":
     # DBTools.import_from_csv(connector, "employees", "../src/", "temp-data")
     # DBTools.import_from_json(connector, "employees", "../src/", "temp-data")
     DBTools.synch_with_csv(connector, "employees", "../backups/", "employees")
+    # DBTools.synch_with_json(connector, "employees", "../backups/", "employees")
     # print(DBSkydivingTools.count_equipment_by_condition(equipment_df, "operational"))
     # print(DBSkydivingTools.filter_equipment_by_condition(equipment_df, "under-maintenance"))
     # print(DBSkydivingTools.filter_students_by_level(students_df, "expert"))
     # print(DBSkydivingTools.count_students_in_group(student_groups_df, students_df, "A"))
     # print(DBSkydivingTools.get_employee_contracts_info(employees_df, contracts_df))
-
-
     connector.disconnect()
