@@ -160,13 +160,6 @@ class DBTools:
         return res
 
     @staticmethod
-    def foo(connector, table, query):
-        cursor = connector.connection.cursor()
-        cursor.execute("DELETE FROM " + table + " WHERE " + query)
-        cursor.close()
-        connector.connection.commit()
-
-    @staticmethod
     def insert_one_into_table(connector, table, *args):
         if isinstance(args[0], tuple) or isinstance(args[0], list):
             args = tuple(args[0])
@@ -203,6 +196,14 @@ class DBTools:
                     parametric_str = primary_key[0] + " = %s"
                 else:
                     parametric_str = primary_key[0] + " = %s" + "".join([" AND " + key + " = %s" for key in primary_key[1:]])
+                cursor = connector.connection.cursor()
+                query = "SELECT * FROM " + table + " WHERE " + parametric_str
+                cursor.execute(query, index)
+                with open(f"../backups/buff.csv", "w") as f:
+                    writer = csv.writer(f, lineterminator="\n")
+                    writer.writerow((table,))
+                    writer.writerow(cursor.fetchone())
+                cursor.close()
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 query = "DELETE FROM " + table + " WHERE " + parametric_str
@@ -213,6 +214,17 @@ class DBTools:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except TableNameMismatch as e:
             print(f"Error: {e}")
+
+    @staticmethod
+    def undo_last_delete(connector):
+        with open(f"../backups/buff.csv", "r") as f:
+            reader = csv.reader(f)
+            table = next(reader)
+            for row in reader:
+                DBTools.insert_one_into_table(connector, table[0], row)
+        with open(f"../backups/buff.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow('')
 
     @staticmethod
     def delete_many_from_table(connector, table, indexes):
