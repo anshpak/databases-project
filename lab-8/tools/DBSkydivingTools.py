@@ -14,10 +14,9 @@ class DBSkydivingTools:
 
     @staticmethod
     def count_students_in_group(student_groups_df, students_df, group):
-        group_id = student_groups_df.loc[student_groups_df.group_name == group].index
-        print(group_id)
+        group_id = student_groups_df.loc[student_groups_df.group_name == group].index[0]
         students_and_groups_df = students_df.groupby("group_id").size()
-        return students_and_groups_df.loc[students_and_groups_df.group_id == group_id]
+        return students_and_groups_df[group_id]
 
     @staticmethod
     def filter_equipment_by_condition(equipment_df, condition):

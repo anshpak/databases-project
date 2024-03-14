@@ -160,6 +160,13 @@ class DBTools:
         return res
 
     @staticmethod
+    def foo(connector, table, query):
+        cursor = connector.connection.cursor()
+        cursor.execute("DELETE FROM " + table + " WHERE " + query)
+        cursor.close()
+        connector.connection.commit()
+
+    @staticmethod
     def insert_one_into_table(connector, table, *args):
         if isinstance(args[0], tuple) or isinstance(args[0], list):
             args = tuple(args[0])
@@ -256,7 +263,7 @@ class DBTools:
                         DBTools.insert_one_into_table(connector, table, row)
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
-        except Exception as e:
+        except TableNameMismatch as e:
             print(f"Error: {e}")
 
     @staticmethod
@@ -269,11 +276,11 @@ class DBTools:
                         DBTools.insert_one_into_table(connector, table, row)
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
-        except Exception as e:
+        except TableNameMismatch as e:
             print(f"Error: {e}")
 
     @staticmethod
-    def synch_with_csv(connector, table, path, filename):
+    def _bad_synch_with_csv(connector, table, path, filename):
         try:
             if DBTools._is_valid_table_name(connector, table):
                 data_from_table = DBTools.get_list_data(connector, table)
@@ -283,8 +290,6 @@ class DBTools:
                     counter = 0
                     deleted_rows = 0
                     for csv_row, table_row in zip(reader, data_from_table):
-                    # for csv_row in reader:
-                        # table_row = [sublist for sublist in data_from_table if sublist[0] == csv_row[0]]
                         counter += 1
                         table_row = [str(data) for data in table_row]
                         if csv_row != table_row:
@@ -308,10 +313,7 @@ class DBTools:
                                 if pos in position:
                                     index_table += [table_row[pos]]
                             if index_csv != index_table:
-                                # DBTools.delete_one_from_table(connector, table, index_csv)
-                                DBTools.update_one_in_table(connector, table, dict(zip(primary_key,
-                                                                                    [ind + "1" for ind in index_csv])),
-                                                            index_csv)
+                                DBTools.delete_one_from_table(connector, table, index_csv)
                                 deleted_rows += 1
                             DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), index_table)
                 with open(f"{path}{filename}.csv", "r") as f:
@@ -333,5 +335,51 @@ class DBTools:
                     cursor.close()
             else:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
-        except Exception as e:
+        except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    @staticmethod
+    def synch_with_csv(connector, table, path, filename):
+        try:
+            if DBTools._is_valid_table_name(connector, table):
+                data_pool_from_table = DBTools.get_list_data(connector, table)
+                columns = DBTools._get_column_names_as_tuple(connector, table)
+                primary_key = DBTools._get_primary_key_name(connector, table)
+                primary_key_position = []
+                interacted_indexes = []
+                for column in columns:
+                    if column in primary_key:
+                        primary_key_position += [columns.index(column)]
+                row_pool_key = [[] for _ in range(len(data_pool_from_table))]
+                counter = 0
+                for row_pool in data_pool_from_table:
+                    for index in primary_key_position:
+                        row_pool_key[counter] += [str(row_pool[index])]
+                        counter += 1
+                with (open(f"{path}{filename}.csv", "r") as f):
+                    reader = csv.reader(f)
+                    for row in reader:
+                        row_reader_key = []
+                        for index in primary_key_position:
+                            row_reader_key += [row[index]]
+                        if row_reader_key in row_pool_key:
+                            row_pool = [str(data) for data in data_pool_from_table[row_pool_key.index(row_reader_key)]]
+                            if row != row_pool:
+                                for pos in range(len(row)):
+                                    keys = []
+                                    values = []
+                                    keys += [columns[pos]]
+                                    values += [row[pos]]
+                                DBTools.update_one_in_table(connector, table, dict(zip(keys, values)), row_reader_key)
+                            interacted_indexes += [row_reader_key]
+                        else:
+                            values = []
+                            for pos in range(len(row)):
+                                values += [row[pos]]
+                            DBTools.insert_one_into_table(connector, table, values)
+                            interacted_indexes += [row_reader_key]
+                    for key in row_pool_key:
+                        if key not in interacted_indexes:
+                            DBTools.delete_one_from_table(connector, table, key)
+        except TableNameMismatch as e:
             print(f"Error: {e}")
