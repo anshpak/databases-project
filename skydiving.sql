@@ -241,15 +241,15 @@ VALUES
 ('Chair SkySeat', 12, 'operational'),
 ('Chair AeroSeat', 10, 'out-of-service');
 
-DROP TABLE IF EXISTS address;
-CREATE TABLE address (
+DROP TABLE IF EXISTS addresses;
+CREATE TABLE addresses (
 	address_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	address_building_name VARCHAR(30),
     address_name VARCHAR(50),
     geographical_coords VARCHAR(30)
 );
 
-INSERT INTO address 
+INSERT INTO addresses
 (address_building_name, address_name, geographical_coords) 
 VALUES
 ('Sunset Apartments', '123 Main Street, Sunset Blvd', '35.6895° N, 139.6917° E'),
@@ -288,7 +288,7 @@ CREATE TABLE students (
     enrollment_date DATE,
     completion_date DATE,
     status ENUM ('active', 'closed', 'expelled'),
-    constraint group_student foreign key (group_id) references student_groups(group_id)
+    CONSTRAINT group_student FOREIGN KEY (group_id) REFERENCES student_groups(group_id)
 );
 
 INSERT INTO students (group_id, student_first_name, student_second_name, student_birthday, student_sex, student_contact_info, student_level, enrollment_date, completion_date, status) VALUES
@@ -394,7 +394,192 @@ INSERT INTO students (group_id, student_first_name, student_second_name, student
 (5, 'Athena', 'Pearson', '2000-02-29', 'female', '+375291234666', 'master', '2023-08-10', '2023-11-10', 'closed'),
 (5, 'Emerson', 'Hunter', '2001-04-17', 'male', '+375291234667', 'beginner', '2023-08-11', '2023-11-11', 'closed');
 
+DROP TABLE IF EXISTS student_schedule;
+CREATE TABLE student_schedule (
+	class_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    employee_id TINYINT UNSIGNED,
+    group_id TINYINT UNSIGNED,
+    class_name VARCHAR(30),
+    class_type ENUM('lecture', 'jumping', 'gym', 'outdoor-practice', 'indoor-practice'),
+    class_date DATE,
+    class_start TIME,
+    class_end TIME,
+    address_id TINYINT UNSIGNED,
+    CONSTRAINT employee_schedule FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+    CONSTRAINT group_schedule FOREIGN KEY (group_id) REFERENCES student_groups(group_id),
+    CONSTRAINT address_schedule FOREIGN KEY (address_id) REFERENCES addresses(address_id)
+);
 
+INSERT INTO student_schedule
+(employee_id, group_id, class_name, class_type, class_date, class_start, class_end, address_id)
+VALUES
+(2, 5, 'Introduction to parashuting', 'lecture', '2024-07-01', '14:30:00', '15:50:00', 1),
+(4, 5, 'Theory of jumping with an instructor', 'lecture', '2024-07-01', '16:00:00', '17:20:00', 1),
+(5, 5, 'Practice of jumping with an instructor', 'indoor-practice', '2024-07-02', '14:30:00', '15:50:00', 2),
+(2, 5, 'Practice of jumping with an instructor', 'indoor-practice', '2024-07-05', '16:00:00', '17:20:00', 2),
+(1, 5, 'Jumping with instructor', 'jumpyng', '2024-07-06', '12:35:00', '14:20:00', 5),
+(1, 5, 'Jumping with instructor', 'jumpyng', '2024-07-07', '12:35:00', '14:20:00', 5);
+
+DROP TABLE IF EXISTS competitions;
+CREATE TABLE competitions (
+	competition_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	address_id TINYINT UNSIGNED,
+    competition_name VARCHAR(30),
+    competition_date DATE,
+    competition_start TIME,
+    CONSTRAINT address_competition FOREIGN KEY (address_id) REFERENCES addresses(address_id)
+);
+
+INSERT INTO competitions
+(address_id, competition_name, competition_date, competition_start)
+VALUES
+(3, 'Sky Soar Challenge', '2024-06-15', '09:00'),
+(4, 'Airborne Adrenaline Cup', '2023-07-11', '11:00'),
+(3, 'High-Flyer Showdown', '2023-08-20', '12:00'),
+(4, 'Aerial Mastery Tournament', '2023-09-13', '11:00'),
+(4, 'Cloud Nine Competition', '2023-06-02', '13:00');
+
+DROP TABLE IF EXISTS competition_results;
+CREATE TABLE competition_results (
+	result_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	competition_id INT UNSiGNED,
+    student_id INT UNSIGNED,
+    student_place ENUM ('1', '2', '3'),
+    CONSTRAINT competition_result FOREIGN KEY (competition_id) REFERENCES competitions(competition_id),
+    CONSTRAINT student_result FOREIGN KEY (student_id) REFERENCES students(student_id)
+);
+
+INSERT INTO competition_results
+(competition_id, student_id, student_place)
+VALUES
+(1, 6, '1'),
+(1, 8, '2'),
+(1, 10, '3'),
+(2, 11, '1'),
+(2, 6, '2'),
+(2, 8, '3'),
+(3, 6, '1'),
+(3, 16, '2'),
+(3, 10, '3'),
+(4, 22, '1'),
+(4, 18, '2'),
+(4, 6, '3'),
+(5, 31, '1'),
+(5, 25, '2'),
+(5, 28, '3');
+
+DROP TABLE IF EXISTS certificates;
+CREATE TABLE certificates(
+	certificate_id INT UNSIGNED AUTO_INCREMENT PRiMARY KEY,
+    date_of_issue DATE,
+    certificate_status ENUM('valid', 'expired', 'revoked', 'pending verification', 'voided'),
+    CONSTRAINT student_certificate FOREIGN KEY (certificate_id) REFERENCES  students(student_id)
+);
+
+INSERT INTO certificates
+(certificate_id, date_of_issue, certificate_status)
+VALUES
+(1, '2023-12-01', 'valid'),
+(2, '2023-12-02', 'valid'),
+(3, '2023-12-03', 'valid'),
+(4, '2023-12-04', 'valid'),
+(5, '2023-12-05', 'valid'),
+(6, '2023-12-06', 'valid'),
+(7, '2023-12-07', 'valid'),
+(8, '2023-12-08', 'valid'),
+(9, '2023-12-09', 'valid'),
+(10, '2023-12-10', 'valid'),
+(11, '2023-12-11', 'valid'),
+(12, '2023-12-12', 'valid'),
+(13, '2023-12-13', 'valid'),
+(14, '2023-12-14', 'valid'),
+(15, '2023-12-15', 'valid'),
+(16, '2023-12-16', 'valid'),
+(17, '2023-12-17', 'valid'),
+(18, '2023-12-18', 'valid'),
+(19, '2023-12-19', 'valid'),
+(20, '2023-12-20', 'valid'),
+(21, '2023-12-21', 'valid'),
+(22, '2023-12-22', 'valid'),
+(23, '2023-12-23', 'valid'),
+(24, '2023-12-24', 'valid'),
+(25, '2023-12-25', 'valid'),
+(26, '2023-12-26', 'valid'),
+(27, '2023-12-27', 'valid'),
+(28, '2023-12-28', 'valid'),
+(29, '2023-12-29', 'valid'),
+(30, '2023-12-30', 'valid'),
+(31, '2023-12-31', 'valid'),
+(32, '2023-12-01', 'expired'),
+(33, '2023-12-02', 'valid'),
+(34, '2023-12-03', 'valid'),
+(35, '2023-12-04', 'valid'),
+(36, '2023-12-05', 'valid'),
+(37, '2023-12-06', 'valid'),
+(38, '2023-12-07', 'valid'),
+(39, '2023-12-08', 'valid'),
+(40, '2023-12-09', 'valid'),
+(41, '2023-12-10', 'valid'),
+(42, '2023-12-11', 'valid'),
+(43, '2023-12-12', 'valid'),
+(44, '2023-12-13', 'valid'),
+(45, '2023-12-14', 'valid'),
+(46, '2023-12-15', 'valid'),
+(47, '2023-12-16', 'valid'),
+(48, '2023-12-17', 'valid'),
+(49, '2023-12-18', 'valid'),
+(50, '2023-12-19', 'valid'),
+(51, '2023-12-20', 'valid'),
+(52, '2023-12-21', 'valid'),
+(53, '2023-12-22', 'valid'),
+(54, '2023-12-23', 'valid'),
+(55, '2023-12-24', 'valid'),
+(56, '2023-12-25', 'valid'),
+(57, '2023-12-26', 'valid'),
+(58, '2023-12-27', 'valid'),
+(59, '2023-12-28', 'valid'),
+(60, '2023-12-29', 'valid'),
+(61, '2023-12-30', 'valid'),
+(62, '2023-12-31', 'expired'),
+(63, '2023-12-01', 'valid'),
+(64, '2023-12-02', 'valid'),
+(65, '2023-12-03', 'valid'),
+(66, '2023-12-04', 'valid'),
+(67, '2023-12-05', 'valid'),
+(68, '2023-12-06', 'valid'),
+(69, '2023-12-07', 'valid'),
+(70, '2023-12-08', 'valid'),
+(71, '2023-12-09', 'valid'),
+(72, '2023-12-10', 'valid'),
+(73, '2023-12-11', 'valid'),
+(74, '2023-12-12', 'valid'),
+(75, '2023-12-13', 'valid'),
+(76, '2023-12-14', 'valid'),
+(77, '2023-12-15', 'valid'),
+(78, '2023-12-16', 'valid'),
+(79, '2023-12-17', 'valid'),
+(80, '2023-12-18', 'valid'),
+(81, '2023-12-19', 'valid'),
+(82, '2023-12-20', 'valid'),
+(83, '2023-12-21', 'valid'),
+(84, '2023-12-22', 'valid'),
+(85, '2023-12-23', 'valid'),
+(86, '2023-12-24', 'valid'),
+(87, '2023-12-25', 'valid'),
+(88, '2023-12-26', 'valid'),
+(89, '2023-12-27', 'valid'),
+(90, '2023-12-28', 'expired'),
+(91, '2023-12-29', 'valid'),
+(92, '2023-12-30', 'valid'),
+(93, '2023-12-31', 'valid'),
+(94, '2023-12-01', 'valid'),
+(95, '2023-12-02', 'valid'),
+(96, '2023-12-03', 'valid'),
+(97, '2023-12-04', 'revoked'),
+(98, '2023-12-05', 'valid'),
+(99, '2023-12-06', 'valid'),
+(100, '2023-12-07', 'valid'),
+(101, '2023-12-08', 'valid');
 
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(
