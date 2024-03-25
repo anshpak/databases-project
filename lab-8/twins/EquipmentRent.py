@@ -1,7 +1,7 @@
 class EquipmentRent:
-    def __init__(self, rent_id, student_id, equipment_id, equipment_amount, rent_start, rent_end, rent_payment):
+    def __init__(self, rent_id, user_id, equipment_id, equipment_amount, rent_start, rent_end, rent_payment):
         self.rent_id = rent_id
-        self.student_id = student_id
+        self.user_id = user_id
         self.equipment_id = equipment_id
         self.equipment_amount = equipment_amount
         self.rent_start = rent_start

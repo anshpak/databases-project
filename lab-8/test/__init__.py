@@ -3,6 +3,8 @@ from tools.DBSkydivingTools import DBSkydivingTools
 from tools.DBTools import DBTools
 import threading
 
+from twins.Profile import Profile
+
 if __name__ == "__main__":
     connector_1 = Connector("localhost", "root", "sic mundus creatus est", "skydiving", 1)
     connector_1.connect(successful_report=False)
@@ -14,6 +16,28 @@ if __name__ == "__main__":
     # thread_2.start()
     # thread_1.join()
     # thread_2.join()
+
+
+
+
+    # twin-classes
+    query = "SELECT * FROM profiles"
+    cursor = connector_1.connection.cursor(dictionary=True)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    profiles = [Profile(**row) for row in data]
+    # for profile in profiles:
+    #     print(profile.rents)
+    # for profile in profiles:
+    #     print(profile)
+    first_person = profiles[0]
+    first_person.user_name = "NIKITA"
+    first_person.user_surname = "NE_NIKITA"
+    first_person.user_cash = 0
+    first_person.user_id = 1000
+
+
+
 
     connector_1.disconnect()
     # connector_2.disconnect()
