@@ -48,15 +48,15 @@ INSERT INTO contracts (contract_start_date, contract_end_date, employee_salary) 
 ('2021-06-14', '2027-08-22', 1100.00),
 ('2023-10-09', '2029-04-03', 1750.00);
 
-DROP TABLE IF EXISTS cources;
-CREATE TABLE cources (
+DROP TABLE IF EXISTS courses;
+CREATE TABLE courses (
 	cource_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	cource_name VARCHAR(30),
     cource_hours TINYINT UNSIGNED,
     cource_jumps TINYINT UNSIGNED
 );
 
-INSERT INTO cources
+INSERT INTO courses
 (cource_name, cource_hours, cource_jumps)
 VALUES
 ('Basic Freefall Skills', 60, 20),
@@ -399,7 +399,7 @@ CREATE TABLE student_schedule (
 	class_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     employee_id TINYINT UNSIGNED,
     group_id TINYINT UNSIGNED,
-    class_name VARCHAR(30),
+    class_name VARCHAR(40),
     class_type ENUM('lecture', 'jumping', 'gym', 'outdoor-practice', 'indoor-practice'),
     class_date DATE,
     class_start TIME,
@@ -417,8 +417,8 @@ VALUES
 (4, 5, 'Theory of jumping with an instructor', 'lecture', '2024-07-01', '16:00:00', '17:20:00', 1),
 (5, 5, 'Practice of jumping with an instructor', 'indoor-practice', '2024-07-02', '14:30:00', '15:50:00', 2),
 (2, 5, 'Practice of jumping with an instructor', 'indoor-practice', '2024-07-05', '16:00:00', '17:20:00', 2),
-(1, 5, 'Jumping with instructor', 'jumpyng', '2024-07-06', '12:35:00', '14:20:00', 5),
-(1, 5, 'Jumping with instructor', 'jumpyng', '2024-07-07', '12:35:00', '14:20:00', 5);
+(1, 5, 'Jumping with instructor', 'jumping', '2024-07-06', '12:35:00', '14:20:00', 5),
+(1, 5, 'Jumping with instructor', 'jumping', '2024-07-07', '12:35:00', '14:20:00', 5);
 
 DROP TABLE IF EXISTS competitions;
 CREATE TABLE competitions (
@@ -581,28 +581,65 @@ VALUES
 (100, '2023-12-07', 'valid'),
 (101, '2023-12-08', 'valid');
 
-DROP TABLE IF EXISTS test;
-CREATE TABLE test(
-	key_column1 INT UNSIGNED AUTO_INCREMENT,
-    key_column2 BIGINT,
-    key_column3 FLOAT,
-	column_1 DOUBLE,
-    column_2 DECIMAL,
-    column_3 CHAR(20),
-    column_4 VARCHAR(20),
-    column_5 TEXT,
-    column_6 DATE,
-    column_7 TIME,
-    column_8 DATETIME,
-    column_9 TIMESTAMP,
-    column_10 BOOLEAN,
-    column_11 BLOB,
-    column_12 BINARY(20),
-    column_13 SET('one', 'two', 'three'),
-    column_14 ENUM('one', 'two', 'three'),
-    PRiMARY KEY(key_column1, key_column2)
+DROP TABLE IF EXISTS profiles;
+CREATE TABLE profiles(
+	user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(20),
+    user_surname VARCHAR(20),
+    user_cash DECIMAL UNSIGNED
 );
 
-SELECT * FROM test;
+INSERT INTO profiles
+(user_name, user_surname, user_cash)
+VALUES
+('John', 'Smith', 500),
+('Emma', 'Johnson', 700),
+('Michael', 'Williams', 450),
+('Olivia', 'Brown', 600),
+('James', 'Jones', 550),
+('Sophia', 'Miller', 800),
+('William', 'Davis', 400),
+('Ava', 'Garcia', 750),
+('Alexander', 'Rodriguez', 300),
+('Charlotte', 'Martinez', 850),
+('Daniel', 'Hernandez', 650),
+('Mia', 'Lopez', 480),
+('Ethan', 'Gonzalez', 720),
+('Isabella', 'Wilson', 520),
+('Liam', 'Anderson', 680),
+('Amelia', 'Thomas', 420),
+('Benjamin', 'Taylor', 780),
+('Emily', 'Moore', 380),
+('Henry', 'Jackson', 560),
+('Harper', 'White', 730);
 
-SELECT * FROM employees;
+DROP TABLE IF EXISTS equipment_rent;
+CREATE TABLE equipment_rent(
+	rent_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED,
+    equipment_id TINYINT UNSIGNED,
+    equipment_amount TINYINT UNSIGNED,
+	rent_start DATE,
+    rent_end DATE,
+    rent_payment DECIMAL,
+    CONSTRAINT profile_rent FOREIGN KEY (user_id) REFERENCES profiles(user_id),
+    CONSTRAINT equipment_rent FOREIGN KEY (equipment_id) REFERENCES equipment(equipment_id)
+);
+
+INSERT INTO equipment_rent
+(user_id, equipment_id, equipment_amount, rent_start, rent_end, rent_payment)
+VALUES
+(4, 13, 5, "2024-03-11", "2024-03-21", 100),
+(4, 23, 6, "2024-02-08", "2024-02-18", 200),
+(1, 13, 4, "2024-01-16", "2024-03-26", 75),
+(7, 23, 2, "2024-02-22", "2024-03-01", 25),
+(15, 13, 1, "2024-03-13", "2024-03-23", 10),
+(18, 23, 3, "2024-02-01", "2024-02-11", 30),
+(15, 13, 3, "2024-03-06", "2024-03-16", 45),
+(7, 23, 4, "2024-03-05", "2024-02-14", 80),
+(15, 13, 5, "2024-02-25", "2024-03-04", 100),
+(7, 23, 1, "2024-02-19", "2024-02-29", 15),
+(18, 13, 2, "2024-02-03", "2024-03-13", 30),
+(15, 23, 3, "2024-02-14", "2024-02-24", 60);
+
+SELECT * FROM equipment_rent;

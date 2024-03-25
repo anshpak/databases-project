@@ -3,7 +3,8 @@ import mysql.connector
 from patterns.SingletonMeta import SingletonMeta
 
 
-class Connector(metaclass=SingletonMeta):
+# class Connector(metaclass=SingletonMeta):
+class Connector:
     def __init__(self, host, user, password, database, singleton_check):
         self.host = host
         self.user = user
