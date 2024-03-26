@@ -643,3 +643,5 @@ VALUES
 (15, 23, 3, "2024-02-14", "2024-02-24", 60);
 
 SELECT * FROM equipment_rent;
+
+SELECT * FROM profiles;
