@@ -24,25 +24,15 @@ class EquipmentRent:
                 cursor.execute(query, params)
                 self.__dict__[key] = value
         elif key == "user_id":
-            if len(self.__dict__) == 1:
-                self.__dict__[key] = value
-            else:
-                query = "UPDATE profiles SET user_id = %s WHERE user_id = %s"
-                params = (value, self.user_id)
-                cursor.execute(query, params)
-                query = "UPDATE equipment_rent SET user_id = %s WHERE user_id = %s"
-                cursor.execute(value, self.user_id)
-                self.__dict__[key] = value
+            self.__dict__[key] = value
+            query = "UPDATE equipment_rent SET user_id = %s WHERE rent_id = %s"
+            params = (value, self.rent_id)
+            cursor.execute(query, params)
         elif key == "equipment_id":
-            if len(self.__dict__) == 2:
-                self.__dict__[key] = value
-            else:
-                query = "UPDATE equipment SET equipment_id = %s WHERE equipment_id = %s"
-                params = (value, self.equipment_id)
-                cursor.execute(query, params)
-                query = "UPDATE equipment_rent SET equipment_id = %s WHERE equipment_id = %s"
-                cursor.execute(query, params)
-                self.__dict__[key] = value
+            self.__dict__[key] = value
+            query = "UPDATE equipment_rent SET equipment_id = %s WHERE rent_id = %s"
+            params = (value, self.rent_id)
+            cursor.execute(query, params)
         elif key == "equipment_amount":
             self.__dict__[key] = value
             query = "UPDATE equipment_rent SET equipment_amount = %s WHERE rent_id = %s"

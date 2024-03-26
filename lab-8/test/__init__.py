@@ -30,25 +30,42 @@ if __name__ == "__main__":
     data = cursor.fetchall()
     rents = [EquipmentRent(**row) for row in data]
 
-    # check the lazy loading
+    # Check the lazy loading.
     # for profile in profiles:
     #     print(profile.rents)
     # for profile in profiles:
     #     print(profile)
 
-    # check updating for a parent
-    # first_person = profiles[19]
+    # Check updating for a parent.
+    # first_person = profiles[0]
     # first_person.user_name = "NIKITA"
     # first_person.user_surname = "NE_NIKITA"
     # first_person.user_cash = 0
     # first_person.user_id = 100
 
-    # check updating for a child
-    first_rent = rents[0]
-    first_rent.equipment_amount = 100
-    first_rent.rent_start = "2012-12-12"
-    first_rent.rent_end = "2012-12-11"
-    first_rent.rent_payment = 0
+    # Check updating for a child.
+    # random_rent = rents[2]
+    # random_rent.equipment_amount = 100
+    # random_rent.rent_start = "2012-12-12"
+    # random_rent.rent_end = "2012-12-11"
+    # random_rent.rent_payment = 0
+
+    # Depends on what I want from code: to change user_id only in one record or in every. If consider this case
+    # than the ref from the parent class in object should be erased.
+    # Due to constraint I can't assign value not in parent table.
+    # random_rent.user_id = 18
+    # random_rent.equipment_id = 40
+
+    # What happens in the field of connected objects? Everything is cool, because of using lazy loading - updating
+    # each time after the attribute was accessed.
+    # for profile in profiles:
+    #     print(profile.rents)
+
+    # What happens if I try to assign values of the child table from the parent? Everything will work fine.
+    # random_profile = profiles[14]
+    # print(random_profile.rents)
+    # random_profile.rents[0].user_id = 1
+    # print(random_profile.rents)
 
     cursor.close()
     connector_1.disconnect()

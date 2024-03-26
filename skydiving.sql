@@ -288,7 +288,7 @@ CREATE TABLE students (
     enrollment_date DATE,
     completion_date DATE,
     status ENUM ('active', 'closed', 'expelled'),
-    CONSTRAINT group_student FOREIGN KEY (group_id) REFERENCES student_groups(group_id)
+    CONSTRAINT group_student FOREIGN KEY (group_id) REFERENCES student_groups(group_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO students (group_id, student_first_name, student_second_name, student_birthday, student_sex, student_contact_info, student_level, enrollment_date, completion_date, status) VALUES
@@ -405,9 +405,9 @@ CREATE TABLE student_schedule (
     class_start TIME,
     class_end TIME,
     address_id TINYINT UNSIGNED,
-    CONSTRAINT employee_schedule FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
-    CONSTRAINT group_schedule FOREIGN KEY (group_id) REFERENCES student_groups(group_id),
-    CONSTRAINT address_schedule FOREIGN KEY (address_id) REFERENCES addresses(address_id)
+    CONSTRAINT employee_schedule FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT group_schedule FOREIGN KEY (group_id) REFERENCES student_groups(group_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT address_schedule FOREIGN KEY (address_id) REFERENCES addresses(address_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO student_schedule
@@ -427,7 +427,7 @@ CREATE TABLE competitions (
     competition_name VARCHAR(30),
     competition_date DATE,
     competition_start TIME,
-    CONSTRAINT address_competition FOREIGN KEY (address_id) REFERENCES addresses(address_id)
+    CONSTRAINT address_competition FOREIGN KEY (address_id) REFERENCES addresses(address_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO competitions
@@ -445,8 +445,8 @@ CREATE TABLE competition_results (
 	competition_id INT UNSiGNED,
     student_id INT UNSIGNED,
     student_place ENUM ('1', '2', '3'),
-    CONSTRAINT competition_result FOREIGN KEY (competition_id) REFERENCES competitions(competition_id),
-    CONSTRAINT student_result FOREIGN KEY (student_id) REFERENCES students(student_id)
+    CONSTRAINT competition_result FOREIGN KEY (competition_id) REFERENCES competitions(competition_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT student_result FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO competition_results
@@ -473,7 +473,7 @@ CREATE TABLE certificates(
 	certificate_id INT UNSIGNED AUTO_INCREMENT PRiMARY KEY,
     date_of_issue DATE,
     certificate_status ENUM('valid', 'expired', 'revoked', 'pending verification', 'voided'),
-    CONSTRAINT student_certificate FOREIGN KEY (certificate_id) REFERENCES  students(student_id)
+    CONSTRAINT student_certificate FOREIGN KEY (certificate_id) REFERENCES  students(student_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO certificates
@@ -622,8 +622,8 @@ CREATE TABLE equipment_rent(
 	rent_start DATE,
     rent_end DATE,
     rent_payment DECIMAL,
-    CONSTRAINT profile_rent FOREIGN KEY (user_id) REFERENCES profiles(user_id),
-    CONSTRAINT equipment_rent FOREIGN KEY (equipment_id) REFERENCES equipment(equipment_id)
+    CONSTRAINT profile_rent FOREIGN KEY (user_id) REFERENCES profiles(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT equipment_rent FOREIGN KEY (equipment_id) REFERENCES equipment(equipment_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO equipment_rent
