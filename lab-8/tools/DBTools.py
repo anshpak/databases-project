@@ -9,7 +9,7 @@ from errors.TableNameMismatch import TableNameMismatch
 
 class DBTools:
     @staticmethod
-    def _is_valid_table_name(connector, table):
+    def is_valid_table_name(connector, table):
         cursor = connector.connection.cursor()
         cursor.execute("SHOW TABLES")
         tables = cursor.fetchall()
@@ -30,7 +30,7 @@ class DBTools:
     @staticmethod
     def get_list_data(connector, table, return_none_if_fails=False):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 query = f"SELECT * FROM {table}"
@@ -58,7 +58,7 @@ class DBTools:
                     return_df_if_index_column_fails=True,
                     return_none_if_table_or_index_fails=False):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 query = f"SELECT * FROM {table}"
                 connector.connection.reset_session()
                 df = pd.read_sql_query(query, connector.connection)
@@ -86,7 +86,7 @@ class DBTools:
     @staticmethod
     def table_to_csv(connector, table, path):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 data = DBTools.get_list_data(connector, table)
                 with open(f"{path}{table}.csv", "w") as f:
@@ -101,7 +101,7 @@ class DBTools:
     @staticmethod
     def table_to_json(connector, table, path):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 query = f"SELECT * FROM {table}"
@@ -164,7 +164,7 @@ class DBTools:
         if isinstance(args[0], tuple) or isinstance(args[0], list):
             args = tuple(args[0])
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 connector.connection.reset_session()
                 cursor = connector.connection.cursor()
                 parameters = ", ".join(["%s" for _ in range(len(args))])
@@ -188,7 +188,7 @@ class DBTools:
     @staticmethod
     def delete_one_from_table(connector, table, *index):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 if isinstance(index[0], tuple) or isinstance(index[0], list):
                     index = tuple(index[0])
                 primary_key = DBTools._get_primary_key_name(connector, table)
@@ -229,7 +229,7 @@ class DBTools:
     @staticmethod
     def delete_many_from_table(connector, table, indexes):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 for index in indexes:
                     DBTools.delete_one_from_table(connector, table, index)
             else:
@@ -240,7 +240,7 @@ class DBTools:
     @staticmethod
     def update_one_in_table(connector, table, data, *index):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 if isinstance(index[0], tuple) or isinstance(index[0], list):
                     index = tuple(index[0])
                 for column in data:
@@ -268,7 +268,7 @@ class DBTools:
     @staticmethod
     def import_from_csv(connector, table, path, filename):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 with open(f"{path}{filename}.csv", "r") as f:
                     reader = csv.reader(f)
                     for row in reader:
@@ -281,7 +281,7 @@ class DBTools:
     @staticmethod
     def import_from_json(connector, table, path, filename):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 with open(f"{path}{filename}.json", "r") as f:
                     data = json.load(f)
                     for row in data:
@@ -294,7 +294,7 @@ class DBTools:
     @staticmethod
     def _bad_synch_with_csv(connector, table, path, filename):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 data_from_table = DBTools.get_list_data(connector, table)
                 primary_key = DBTools._get_primary_key_name(connector, table)
                 with open(f"{path}{filename}.csv", "r") as f:
@@ -353,7 +353,7 @@ class DBTools:
     @staticmethod
     def synch_with_csv(connector, table, path, filename):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 data_pool_from_table = DBTools.get_list_data(connector, table)
                 columns = DBTools._get_column_names_as_tuple(connector, table)
                 primary_key = DBTools._get_primary_key_name(connector, table)
@@ -399,7 +399,7 @@ class DBTools:
     @staticmethod
     def synch_with_json(connector, table, path, filename):
         try:
-            if DBTools._is_valid_table_name(connector, table):
+            if DBTools.is_valid_table_name(connector, table):
                 data_pool_from_table = DBTools.get_list_data(connector, table)
                 columns = DBTools._get_column_names_as_tuple(connector, table)
                 primary_key = DBTools._get_primary_key_name(connector, table)

@@ -59,3 +59,15 @@ class Profile:
 
     def __repr__(self):
         return str(self.__dict__)
+
+    # In this case the whole table will be deleted.
+    # def __del__(self):
+    #     connector = Connector("localhost", "root", "sic mundus creatus est", "skydiving", 1)
+    #     connector.connect(successful_report=False)
+    #     cursor = connector.connection.cursor()
+    #     query = "DELETE FROM profiles WHERE user_id = %s"
+    #     params = (self.user_id,)
+    #     cursor.execute(query, params)
+    #     connector.connection.commit()
+    #     cursor.close()
+    #     connector.disconnect()

@@ -2,9 +2,9 @@ from connector.Connector import Connector
 from tools.DBSkydivingTools import DBSkydivingTools
 from tools.DBTools import DBTools
 import threading
-
 from twins.EquipmentRent import EquipmentRent
 from twins.Profile import Profile
+from structures.Table import Table
 
 if __name__ == "__main__":
     connector_1 = Connector("localhost", "root", "sic mundus creatus est", "skydiving", 1)
@@ -66,6 +66,21 @@ if __name__ == "__main__":
     # print(random_profile.rents)
     # random_profile.rents[0].user_id = 1
     # print(random_profile.rents)
+
+    # Deleting records with bad override of __del__.
+    # print(profiles[0])
+    # del profiles[0]
+    # print(profiles[0])
+
+    # Let's implement new class inheriting list and try to override method remove there.
+    # profiles_table = Table("profiles")
+    # for profile in profiles_table:
+    #     print(profile)
+    # random_profile = profiles_table[4]
+    # profiles_table.remove(random_profile)
+    # print("After removing:")
+    # for profile in profiles_table:
+    #     print(profile)
 
     cursor.close()
     connector_1.disconnect()
