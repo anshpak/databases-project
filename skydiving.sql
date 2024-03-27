@@ -642,6 +642,40 @@ VALUES
 (18, 13, 2, "2024-02-03", "2024-03-13", 30),
 (15, 23, 3, "2024-02-14", "2024-02-24", 60);
 
+DROP TABLE IF exists employees_and_courses;
+CREATE TABLE employees_and_courses(
+	employee_id TINYINT UNSIGNED,
+    course_id TINYINT UNSIGNED,
+    PRIMARY KEY (employee_id, course_id),
+    CONSTRAINT employee_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+    CONSTRAINT course_course FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+INSERT INTO employees_and_courses
+(VALUES)
+(employee_id, course_id)
+(1, 1),
+(1, 2),
+(2, 3),
+(2, 4)
+(3, 5),
+(3, 6),
+(4, 7),
+(4, 8)
+(5, 1),
+(5, 2),
+(6, 3),
+(6, 4)
+(7, 5),
+(7, 6),
+(8, 7),
+(8, 8)
+(9, 1),
+(9, 2),
+(10, 3),
+(10, );
+
+
 SELECT * FROM equipment_rent;
 
 SELECT * FROM profiles;

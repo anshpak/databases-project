@@ -2,6 +2,8 @@ from connector.Connector import Connector
 from tools.DBSkydivingTools import DBSkydivingTools
 from tools.DBTools import DBTools
 import threading
+
+from twins.Employee import Employee
 from twins.EquipmentRent import EquipmentRent
 from twins.Profile import Profile
 from structures.Table import Table
@@ -81,6 +83,14 @@ if __name__ == "__main__":
     # print("After removing:")
     # for profile in profiles_table:
     #     print(profile)
+
+    # Let's test greedy loading.
+    query = "SELECT * FROM employees"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    employees = [Employee(**row) for row in data]
+    for employee in employees:
+        print(employee)
 
     cursor.close()
     connector_1.disconnect()
