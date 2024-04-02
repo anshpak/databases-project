@@ -32,17 +32,17 @@ class DBSkydivingTools:
     def give_user(connector, from_id, whom_id, value):
         try:
             with connector.connection.cursor() as cursor:
-                query = f"SELECT * FROM ACCOUNTS WHERE user_id = %s OR user_id = %s"
+                query = f"SELECT * FROM profiles WHERE user_id = %s OR user_id = %s"
                 cursor.execute(query, (from_id, whom_id))
                 cursor.fetchall()
                 rows = cursor.rowcount
                 if rows == 2:
                     with connector.connection.cursor() as cursor:
-                        query = "UPDATE accounts SET user_cash = user_cash - %s WHERE user_id = %s"
+                        query = "UPDATE profiles SET user_cash = user_cash - %s WHERE user_id = %s"
                         cursor.execute(query, (value, from_id))
                         if cursor.rowcount == 1:
-                            input()
-                            query = "UPDATE accounts SET user_cash = user_cash + %s WHERE user_id = %s"
+                            # input()
+                            query = "UPDATE profiles SET user_cash = user_cash + %s WHERE user_id = %s"
                             cursor.execute(query, (value, whom_id))
                             if cursor.rowcount == 1:
                                 connector.connection.commit()

@@ -2,12 +2,13 @@ from connector.Connector import Connector
 
 
 class Employee:
-    def __init__(self, employee_id, employee_name, employee_surname, employee_position, contact_info):
+    def __init__(self, employee_id, employee_name, employee_surname, employee_position, contact_info, employee_photo=None):
         self.employee_id = employee_id
         self.employee_name = employee_name
         self.employee_surname = employee_surname
         self.employee_position = employee_position
         self.contact_info = contact_info
+        self.employee_photo = employee_photo
         self.courses = None
         self.get_courses()
 

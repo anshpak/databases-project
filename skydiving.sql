@@ -8,7 +8,8 @@ CREATE TABLE employees (
 	employee_name VARCHAR(20),
     employee_surname VARCHAR(20),
     employee_position ENUM('skydiving-instructor', 'safety-instructor', 'trainer', 'manager', 'mechanic', 'pilot'),
-    contact_info VARCHAR(14)
+    contact_info VARCHAR(14),
+    employee_photo BLOB
 );
 
 INSERT INTO employees (employee_name, employee_surname, employee_position, contact_info) VALUES
@@ -50,14 +51,14 @@ INSERT INTO contracts (contract_start_date, contract_end_date, employee_salary) 
 
 DROP TABLE IF EXISTS courses;
 CREATE TABLE courses (
-	cource_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	cource_name VARCHAR(30),
-    cource_hours TINYINT UNSIGNED,
-    cource_jumps TINYINT UNSIGNED
+	course_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	course_name VARCHAR(30),
+    course_hours TINYINT UNSIGNED,
+    course_jumps TINYINT UNSIGNED
 );
 
 INSERT INTO courses
-(cource_name, cource_hours, cource_jumps)
+(course_name, course_hours, course_jumps)
 VALUES
 ('Basic Freefall Skills', 60, 20),
 ('Canopy Control', 40, 0),
@@ -262,12 +263,12 @@ VALUES
 DROP TABLE IF EXISTS student_groups;
 CREATE TABLE student_groups(
 	group_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    cource_id TINYINT UNSIGNED,
+    course_id TINYINT UNSIGNED,
     group_name VARCHAR(1)
 );
 
 INSERT INTO student_groups
-(cource_id, group_name)
+(course_id, group_name)
 VALUES
 (1, "A"),
 (3, "B"),
@@ -592,7 +593,7 @@ CREATE TABLE profiles(
 INSERT INTO profiles
 (user_name, user_surname, user_cash)
 VALUES
-('John', 'Smith', 500),
+('John', 'Smith', 50000),
 ('Emma', 'Johnson', 700),
 ('Michael', 'Williams', 450),
 ('Olivia', 'Brown', 600),
@@ -652,30 +653,40 @@ CREATE TABLE employees_and_courses(
 );
 
 INSERT INTO employees_and_courses
-(VALUES)
 (employee_id, course_id)
+VALUES
 (1, 1),
 (1, 2),
 (2, 3),
-(2, 4)
+(2, 4),
 (3, 5),
 (3, 6),
 (4, 7),
-(4, 8)
+(4, 8),
 (5, 1),
 (5, 2),
 (6, 3),
-(6, 4)
+(6, 4),
 (7, 5),
 (7, 6),
 (8, 7),
-(8, 8)
+(8, 8),
 (9, 1),
 (9, 2),
 (10, 3),
-(10, );
+(10, 4);
 
+SELECT courses.course_id, course_name, course_hours, course_jumps FROM
+(SELECT course_id FROM employees_and_courses WHERE employee_id = 5) as employee_and_his_courses
+INNER JOIN courses
+ON employee_and_his_courses.course_id = courses.course_id;
 
 SELECT * FROM equipment_rent;
 
 SELECT * FROM profiles;
+
+SELECT * FROM employees;
+
+SELECT * FROM profiles
+ORDER BY user_id DESC
+LIMIT 5;

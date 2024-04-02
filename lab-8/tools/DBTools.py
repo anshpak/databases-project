@@ -5,6 +5,8 @@ import pandas as pd
 
 from errors.ColumnNameMismatch import ColumnNameMismatch
 from errors.TableNameMismatch import TableNameMismatch
+from io import BytesIO
+from PIL import Image
 
 
 class DBTools:
@@ -116,6 +118,23 @@ class DBTools:
             print(f"Error: {e}")
 
     @staticmethod
+    def get_column_names_as_list(connector, table):
+        try:
+            if DBTools.is_valid_table_name(connector, table):
+                connector.connection.reset_session()
+                cursor = connector.connection.cursor()
+                query = f"SELECT * FROM {table} LIMIT 1"
+                cursor.execute(query)
+                columns = [column[0] for column in cursor.description]
+                cursor.fetchone()
+                cursor.close()
+                return columns
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    @staticmethod
     def _get_column_names_as_tuple(connector, table):
         connector.connection.reset_session()
         cursor = connector.connection.cursor()
@@ -195,7 +214,8 @@ class DBTools:
                 if len(index) == 1:
                     parametric_str = primary_key[0] + " = %s"
                 else:
-                    parametric_str = primary_key[0] + " = %s" + "".join([" AND " + key + " = %s" for key in primary_key[1:]])
+                    parametric_str = primary_key[0] + " = %s" + "".join(
+                        [" AND " + key + " = %s" for key in primary_key[1:]])
                 cursor = connector.connection.cursor()
                 query = "SELECT * FROM " + table + " WHERE " + parametric_str
                 cursor.execute(query, index)
@@ -266,10 +286,11 @@ class DBTools:
             print(f"Error: {e}")
 
     @staticmethod
-    def import_from_csv(connector, table, path, filename):
+    def import_from_csv(connector, table, path, filename=None):
         try:
             if DBTools.is_valid_table_name(connector, table):
-                with open(f"{path}{filename}.csv", "r") as f:
+                # with open(f"{path}{filename}.csv", "r") as f:
+                with open(f"{path}", "r") as f:
                     reader = csv.reader(f)
                     for row in reader:
                         DBTools.insert_one_into_table(connector, table, row)
@@ -279,10 +300,11 @@ class DBTools:
             print(f"Error: {e}")
 
     @staticmethod
-    def import_from_json(connector, table, path, filename):
+    def import_from_json(connector, table, path, filename=None):
         try:
             if DBTools.is_valid_table_name(connector, table):
-                with open(f"{path}{filename}.json", "r") as f:
+                # with open(f"{path}{filename}.json", "r") as f:
+                with open(f"{path}", "r") as f:
                     data = json.load(f)
                     for row in data:
                         DBTools.insert_one_into_table(connector, table, row)
@@ -440,4 +462,48 @@ class DBTools:
                         if key not in interacted_indexes:
                             DBTools.delete_one_from_table(connector, table, key)
         except TableNameMismatch as e:
+            print(f"Error: {e}")
+
+    # To do: update method to work with composite primary key.
+    @staticmethod
+    def update_with_image_by_id(connector, table, column, where_to_put_id, pic):
+        try:
+            if DBTools.is_valid_table_name(connector, table):
+                if DBTools._is_valid_column_name(connector, table, column):
+                    primary_key = DBTools._get_primary_key_name(connector, table)
+                    cursor = connector.connection.cursor()
+                    query = f"UPDATE {table} SET {column} = %s WHERE {primary_key[0]} = {where_to_put_id}"
+                    with open(pic, 'rb') as file:
+                        binary_data = file.read()
+                    cursor.execute(query, (binary_data,))
+                    cursor.close()
+                    connector.connection.commit()
+                else:
+                    raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except (TableNameMismatch, ColumnNameMismatch) as e:
+            print(f"Error: {e}")
+
+    # To do: update method to work with composite primary key.
+    @staticmethod
+    def display_image_by_id(connector, table, column, where_to_get_id):
+        try:
+            if DBTools.is_valid_table_name(connector, table):
+                if DBTools._is_valid_column_name(connector, table, column):
+                    cursor = connector.connection.cursor()
+                    primary_key = DBTools._get_primary_key_name(connector, table)
+                    query = f"SELECT {column} FROM {table} WHERE {primary_key[0]} = %s"
+                    cursor.execute(query, (where_to_get_id,))
+                    data = cursor.fetchall()[0][0]
+                    image_bytes = bytes(data)
+                    image_stream = BytesIO(image_bytes)
+                    img = Image.open(image_stream)
+                    img.show()
+                    cursor.close()
+                else:
+                    raise ColumnNameMismatch(f"Passed column name \"{column}\" absent in table.")
+            else:
+                raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
+        except (TableNameMismatch, ColumnNameMismatch) as e:
             print(f"Error: {e}")
