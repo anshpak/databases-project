@@ -41,7 +41,6 @@ class DBSkydivingTools:
                         query = "UPDATE profiles SET user_cash = user_cash - %s WHERE user_id = %s"
                         cursor.execute(query, (value, from_id))
                         if cursor.rowcount == 1:
-                            # input()
                             query = "UPDATE profiles SET user_cash = user_cash + %s WHERE user_id = %s"
                             cursor.execute(query, (value, whom_id))
                             if cursor.rowcount == 1:
