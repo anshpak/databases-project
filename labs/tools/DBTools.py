@@ -11,13 +11,19 @@ from PIL import Image
 
 class DBTools:
     @staticmethod
-    def is_valid_table_name(connector, table):
-        cursor = connector.connection.cursor()
-        cursor.execute("SHOW TABLES")
-        tables = cursor.fetchall()
-        tables = [table for tpl in tables for table in tpl]
-        cursor.close()
-        return table in tables
+    def is_valid_table_name(connector, table_to_check):
+        try:
+            if not isinstance(table_to_check, str):
+                raise Exception(f'Types mismatch, str class expected, but {type(table_to_check).__name__} type was '
+                                'received.')
+            cursor = connector.connection.cursor()
+            cursor.execute('SHOW TABLES')
+            tables = cursor.fetchall()
+            cursor.close()
+            return bool([table for tpl in tables for table in tpl if table == table_to_check])
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
 
     @staticmethod
     def _is_valid_column_name(connector, table, column):
@@ -507,3 +513,5 @@ class DBTools:
                 raise TableNameMismatch(f"Passed table name \"{table}\" absent in database.")
         except (TableNameMismatch, ColumnNameMismatch) as e:
             print(f"Error: {e}")
+
+

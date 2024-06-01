@@ -7,7 +7,7 @@ CREATE TABLE employees (
 	employee_id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	employee_name VARCHAR(20),
     employee_surname VARCHAR(20),
-    employee_position ENUM('skydiving-instructor', 'safety-instructor', 'trainer', 'manager', 'mechanic', 'pilot'),
+    employee_position ENUM('skydiving-instructor', 'safety-instructor', 'trainer', 'manager', 'mechanic', 'pylot'),
     contact_info VARCHAR(14),
     employee_photo BLOB
 );
@@ -23,8 +23,8 @@ INSERT INTO employees (employee_name, employee_surname, employee_position, conta
 ('Anna', 'Semenova', 'manager', '+375753824639'),
 ('Pavel', 'Morozov', 'mechanic', '+375951824622'),
 ('Natalia', 'Fedorova', 'mechanic', '+375615937011'),
-('Alexander', 'Kuznetsov', 'pilot', '+375937082469'),
-('Lyudmila', 'Ivanova', 'pilot', '+375082461529');
+('Alexander', 'Kuznetsov', 'pylot', '+375937082469'),
+('Lyudmila', 'Ivanova', 'pylot', '+375082461529');
 
 DROP TABLE IF EXISTS contracts;
 CREATE TABLE contracts (
@@ -648,8 +648,8 @@ CREATE TABLE employees_and_courses(
 	employee_id TINYINT UNSIGNED,
     course_id TINYINT UNSIGNED,
     PRIMARY KEY (employee_id, course_id),
-    CONSTRAINT employee_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
-    CONSTRAINT course_course FOREIGN KEY (course_id) REFERENCES courses(course_id)
+    CONSTRAINT employee_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT course_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO employees_and_courses
@@ -690,3 +690,43 @@ SELECT * FROM employees;
 SELECT * FROM profiles
 ORDER BY user_id DESC
 LIMIT 5;
+
+DROP TABLE IF EXISTS parents;
+CREATE TABLE parents(
+	parent_id INT UNSIGNED PRIMARY KEY,
+    parent_name VARCHAR(20)
+);
+
+DROP TABLE IF EXISTS children;
+CREATE TABLE children(
+	child_id INT UNSIGNED PRiMARY KEY,
+    child_name VARCHAR(20),
+    CONSTRAINT parent_child FOREIGN KEY (child_id) REFERENCES parents(parent_id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS deceases;
+CREATE TABLE deceases(
+	decease_id INT UNSIGNED PRIMARY KEY,
+    parent_id INT UNSIGNED,
+    decease_name VARCHAR(20),
+    CONSTRAINT parent_decease FOREIGN KEY (parent_id) REFERENCES parents(parent_id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS doctors;
+CREATE TABLE doctors(
+	doctor_id INT PRIMARY KEY,
+    doctor_name VARCHAR(20)
+);
+
+DROP TABLE IF EXISTS cards;
+CREATE TABLE cards (
+	doctor_id INT,
+    parent_id INT UNSIGNED,
+    PRIMARY KEY (doctor_id, parent_id),
+    CONSTRAINT doctor_card FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE, 
+    CONSTRAINT parent_card FOREIGN KEY (parent_id) REFERENCES parents(parent_id) ON DELETE CASCADE
+);
+
+use skydiving;
+
+select * from parents;
