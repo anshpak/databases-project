@@ -1,7 +1,7 @@
 class Node:
-    def __init__(self, value, kind, entity):
+    def __init__(self, value, action, entity):
         self.value = value
-        self.kind = kind
+        self.action = action
         self.entity = entity
         self.next = None
 
@@ -22,8 +22,8 @@ class Stack:
             print('No changes were made.')
         return self.head.next.value
 
-    def push(self, value, kind, entity):
-        node = Node(value, kind, entity)
+    def push(self, value, action, entity):
+        node = Node(value, action, entity)
         node.next = self.head
         self.head = node
         self.size += 1

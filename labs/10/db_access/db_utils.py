@@ -1,6 +1,8 @@
 from data_structures.stack import Stack
 from sqlalchemy.orm import make_transient
 
+from models.skydiving import Employee
+
 
 class DBUtils:
     changes_stack = Stack()
@@ -11,22 +13,27 @@ class DBUtils:
         return query
 
     @staticmethod
-    def add_entity_instance(session, entity):
-        session.add(entity)
+    def add_entity_instance(session, instance):
+        DBUtils.changes_stack.push(instance, 'add', type(instance).__name__)
+        session.add(instance)
 
     @staticmethod
-    def remove_entity_instance(session, entity, id_):
-        query = session.query(entity)
+    def remove_entity_instance(session, query, entity, id_):
         instance = query.filter(entity.id == id_).first()
         DBUtils.changes_stack.push(instance, 'delete', entity.__name__)
         session.delete(instance)
 
     @staticmethod
     def undo_last_change(session):
-        instance = DBUtils.changes_stack.pop()
-        if instance.kind == 'delete':
-            if instance.entity == 'Employee':
-                obj = instance.value
-                make_transient(obj)
-                make_transient(obj.contract)
-                session.add(obj)
+        node = DBUtils.changes_stack.pop()
+        if node.action == 'delete':
+            if node.entity == 'Employee':
+                instance = node.value
+                make_transient(instance)
+                if instance.contract is not None:
+                    make_transient(instance.contract)
+                session.add(instance)
+        if node.action == 'add':
+            if node.entity == 'Employee':
+                instance = node.value
+                session.delete(instance)

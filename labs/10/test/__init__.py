@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.skydiving import Employee, Contract, Parent, Child
 from db_access.db_utils import DBUtils
-from data_structures.stack import Stack
 
 # To do:
 # 1. Normal data output.
@@ -14,6 +13,8 @@ from data_structures.stack import Stack
 # 7. Add an opportunity to send changes on the server.
 # 8. Add an opportunity to remove objects with multiple primary keys.
 # 9. Add errors processing: when the id to remove is not found.
+# 10. Conflicts processing for cancelling changes.
+# 11. Move queries of data to DBUtils.
 
 # Conventions:
 # 1. I always know the name of the primary key.
@@ -70,7 +71,7 @@ if __name__ == '__main__':
                 if choice == '1':
                     print('-' * 80)
                     id_ = input('Enter employee\'s id: ')
-                    DBUtils.remove_entity_instance(cur_session, Employee, id_)
+                    DBUtils.remove_entity_instance(cur_session, employees_query, Employee, id_)
                     break
                 elif choice == 'q':
                     break
