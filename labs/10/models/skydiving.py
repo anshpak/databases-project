@@ -32,6 +32,23 @@ class Employee(Base):
     photo: Mapped[str] = mapped_column('employee_photo')
     contract: Mapped['Contract'] = relationship(back_populates='employee', cascade='delete, save-update')
 
+    def __init__(self, *initial_data, **kwargs):
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "surname": self.surname,
+            "position": self.position,
+            "contact_info": self.form,
+            "photo": self.value
+        }
+
     def __repr__(self):
         return ("<Employee(id ='%s', name='%s', surname='%s', position='%s', info='%s', photo='%s')>" %
                 (self.id, self.name, self.surname, self.position, self.contact_info, self.photo))
@@ -73,8 +90,8 @@ class Child(Base):
     def __repr__(self):
         return "<Child(id ='%s', name='%s')>" % (self.id, self.name)
 
-#
-# # One-to-many connection.
+
+# One-to-many connection.
 class Decease(Base):
     __tablename__ = 'deceases'
     decease_id: Mapped[int] = mapped_column('decease_id', primary_key=True)
@@ -105,5 +122,3 @@ class Card(Base):
 
     def __repr__(self):
         return "<Card(doctor_id = '%s', parent_id = '%s')>" % (self.doctor_id, self.parent_id)
-
-

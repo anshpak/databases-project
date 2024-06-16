@@ -33,7 +33,18 @@ class DBUtils:
                 if instance.contract is not None:
                     make_transient(instance.contract)
                 session.add(instance)
+            elif node.entity == 'MaleStud':
+                instance = node.value
+                make_transient(instance)
+                if instance.military_service is not None:
+                    make_transient(instance.military_service)
+                if instance.friends is not None:
+                    make_transient(instance.friends)
+                session.add(instance)
         if node.action == 'add':
             if node.entity == 'Employee':
+                instance = node.value
+                session.delete(instance)
+            elif node.entity == 'MaleStud':
                 instance = node.value
                 session.delete(instance)

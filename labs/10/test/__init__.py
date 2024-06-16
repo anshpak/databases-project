@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.skydiving import Employee, Contract, Parent, Child
+from models.skydiving import Employee
 from db_access.db_utils import DBUtils
 
 # To do:
