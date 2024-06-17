@@ -45,8 +45,8 @@ class Employee(Base):
             "name": self.name,
             "surname": self.surname,
             "position": self.position,
-            "contact_info": self.form,
-            "photo": self.value
+            "contact_info": self.contact_info,
+            "photo": self.photo
         }
 
     def __repr__(self):

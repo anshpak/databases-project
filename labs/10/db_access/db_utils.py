@@ -18,6 +18,10 @@ class DBUtils:
         session.add(instance)
 
     @staticmethod
+    def get_entity_instance(query, entity, id_):
+        return query.filter(entity.id == id_).first()
+
+    @staticmethod
     def remove_entity_instance(session, query, entity, id_):
         instance = query.filter(entity.id == id_).first()
         DBUtils.changes_stack.push(instance, 'delete', entity.__name__)
