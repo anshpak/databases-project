@@ -37,17 +37,12 @@ def delete_subject_bu_id(id_):
     return make_response("", 204)
 
 
-@app.route("/student/add/<int:id>", methods=['PUT'])
-def edit_student_by_id(id):
+@app.route("/student/add", methods=['PUT'])
+def add_entity_instance():
     input_data = request.get_json()
-    cur_stud = dal.get_stud_by_id(id) # type: Student
-    for key in input_data:
-        if key != "id":
-            setattr(cur_stud, key, input_data[key])
-        else:
-            pass
-    dal.commit()
-    return jsonify(cur_stud.serialize())
+    DBUtils.add_entity_instance(cur_session, jsonify(input_data.serialize()))
+    cur_session.commit()
+    return make_response("", 204)
 
 
 

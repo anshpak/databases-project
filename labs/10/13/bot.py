@@ -1,3 +1,5 @@
+import json
+
 import telebot
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -5,10 +7,12 @@ from telebot import types
 import requests
 
 from db_access.db_utils import DBUtils
+from models.skydiving import Employee
 from models.user import User
 
 service_URL = 'http://127.0.0.1:5000'
 global cur_id
+global temp_data_dict
 
 bot = telebot.TeleBot('')
 
@@ -100,11 +104,12 @@ def show_data(message, user: User):
         response_result = requests.get(service_URL + '/employees')
         dict_from_server = pretty_string(response_result.json())
         keyboard = types.InlineKeyboardMarkup()
-        keyboard.add(types.InlineKeyboardButton(text="Add a new one", callback_data="add_a_new_entity_instance"))
-        bot.send_message(message.chat.id, dict_from_server, parse_mode='Markdown')
-        employee_id_message = bot.send_message(message.chat.id, 'Select an employee id for further actions',
+        pressed_button = keyboard.add(types.InlineKeyboardButton(text="+", callback_data="get_new_entity_instance_id:Employee"))
+        bot.send_message(message.chat.id, dict_from_server, reply_markup=keyboard, parse_mode='Markdown')
+        employee_id_message = bot.send_message(message.chat.id, 'Select an employee id for further actions or '
+                                                                'simply add a new one',
                                                reply_markup=types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(employee_id_message, show_actions_with_entity_instance, user)
+        bot.register_next_step_handler(employee_id_message, show_actions_with_entity_instance, user, pressed_button)
     else:
         bot.send_message(message.chat.id, 'Please, stop typing nonsense and choose a valid option')
         bot.register_next_step_handler(message, show_data, user)
@@ -123,7 +128,85 @@ def pretty_string(data: list):
     return res
 
 
-def show_actions_with_entity_instance(message: types.Message, user: User):
+@bot.callback_query_handler(func=lambda call: call.data.startswith('get_new_entity_instance_id'))
+def add_a_new_entity_instance(call):
+    global temp_data_dict
+    temp_data_dict = {}
+    entity_name = call.data.split(':')[1]
+    if entity_name == 'Employee':
+        identifier = 'id'
+    else:
+        pass
+    new_instance_id_message = bot.send_message(call.message.chat.id, 'Please, type a new ' + identifier + ':')
+    bot.register_next_step_handler(new_instance_id_message, get_new_entity_instance_name, identifier, entity_name)
+
+
+def get_new_entity_instance_name(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    temp_data_dict[previous_attribute] = message.text
+    if entity_name == 'Employee':
+        name = 'name'
+    else:
+        pass
+    new_instance_name_message = bot.send_message(message.chat.id, 'Please, type a new ' + name + ':')
+    bot.register_next_step_handler(new_instance_name_message, get_new_entity_instance_surname, name, entity_name)
+
+
+def get_new_entity_instance_surname(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    temp_data_dict[previous_attribute] = message.text
+    if entity_name == 'Employee':
+        surname = 'surname'
+    else:
+        pass
+    new_instance_surname_message = bot.send_message(message.chat.id, 'Please, type a new ' + surname + ':')
+    bot.register_next_step_handler(new_instance_surname_message, get_new_entity_instance_position, surname, entity_name)
+
+
+def get_new_entity_instance_position(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    temp_data_dict[previous_attribute] = message.text
+    if entity_name == 'Employee':
+        position = 'position'
+    else:
+        pass
+    new_instance_position_message = bot.send_message(message.chat.id, 'Please, type a new ' + position + ':')
+    bot.register_next_step_handler(new_instance_position_message, get_new_entity_instance_contact_info, position, entity_name)
+
+
+def get_new_entity_instance_contact_info(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    temp_data_dict[previous_attribute] = message.text
+    if entity_name == 'Employee':
+        contact_info = 'contact_info'
+    else:
+        pass
+    new_instance_contact_info_message = bot.send_message(message.chat.id, 'Please, type a new :' + contact_info + ':')
+    bot.register_next_step_handler(new_instance_contact_info_message, get_new_entity_instance_photo, contact_info, entity_name)
+
+
+def get_new_entity_instance_photo(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    temp_data_dict[previous_attribute] = message.text
+    if entity_name == 'Employee':
+        photo = 'photo'
+    else:
+        pass
+    new_instance_photo_message = bot.send_message(message.chat.id, 'Please, send a new :' + photo + ':')
+    bot.register_next_step_handler(new_instance_photo_message, add_new_entity_instance, photo, entity_name)
+
+
+def add_new_entity_instance(message: types.Message, previous_attribute, entity_name):
+    global temp_data_dict
+    # temp_data_dict[previous_attribute] = message.text
+    temp_data_dict[previous_attribute] = 'None'
+    if entity_name == 'Employee':
+        response_result = requests.put(service_URL + '/employees/add', json.dumps(temp_data_dict), headers={'Content-Type': 'application/json'})
+
+
+def show_actions_with_entity_instance(message: types.Message, user: User, pressed_button):
+    if pressed_button.keyboard[0][0].text == '+':
+        return
     instance_id = message.text
     global cur_id
     cur_id = instance_id
