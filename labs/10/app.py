@@ -30,20 +30,20 @@ def show_employee_by_id(id_):
     return jsonify(instance.serialize())
 
 
-@app.route("/employees/delete/<int:id>", methods=['DELETE'])
-def delete_subject_bu_id(id_):
+@app.route("/employees/delete/<int:id_>", methods=['DELETE'])
+def remove_employee_by_id(id_):
     DBUtils.remove_entity_instance(cur_session, employees_query, Employee, id_)
     cur_session.commit()
     return make_response("", 204)
 
 
-@app.route("/student/add", methods=['PUT'])
+@app.route("/employees/add", methods=['PUT'])
 def add_entity_instance():
+    print('here')
     input_data = request.get_json()
-    DBUtils.add_entity_instance(cur_session, jsonify(input_data.serialize()))
+    DBUtils.add_entity_instance(cur_session, Employee(input_data))
     cur_session.commit()
     return make_response("", 204)
-
 
 
 if __name__ == '__main__':
