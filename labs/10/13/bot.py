@@ -229,7 +229,9 @@ def perform_actions_with_instance(message: types.Message, entity_name: str):
                          reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, get_new_entity_instance_name, entity_name)
     elif message.text == 'Edit':
-        pass
+        bot.send_message(message.chat.id, 'Please, type a new entity identifier:',
+                         reply_markup=types.ReplyKeyboardRemove())
+        bot.register_next_step_handler(message, show_entity_instance, 'Employees')
     elif message.text == 'Remove':
         instance_id_message = bot.send_message(message.chat.id, 'Please, type an entity identifier to remove:',
                                                reply_markup=types.ReplyKeyboardRemove())
@@ -244,6 +246,36 @@ def perform_actions_with_instance(message: types.Message, entity_name: str):
                                                                   'valid option')
         bot.register_next_step_handler(chosen_action_message, perform_actions_with_instance)
 
+
+def show_entity_instance(message: types.Message, chosen_entities: str):
+    instance_id = message.text
+    global cur_id
+    cur_id = instance_id
+    response_result = requests.get(service_URL + '/employees' + '/' + cur_id)
+    if response_result.status_code == 200:
+        dict_from_server = pretty_string([response_result.json()])
+        bot.send_message(message.chat.id, dict_from_server, parse_mode='Markdown')
+        if chosen_entities == 'Employees':
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            buttons = ['id', 'name', 'surname', 'position', 'phone number', 'photo']
+            keyboard.add(*buttons)
+            field_to_edit_message = bot.send_message(message.chat.id, 'Please, select a field to edit:', reply_markup=keyboard)
+        else:
+            pass
+    else:
+        pass
+    bot.register_next_step_handler(field_to_edit_message, edit_entity_instance, chosen_entities)
+
+
+def edit_entity_instance(message: types.Message, chosen_entities: str):
+    field = message.text
+    response_result = requests.get(service_URL + '/employees' + '/' + cur_id + '/' + field)
+    if response_result.status_code == 204:
+        message.text = chosen_entities
+        show_data(message)
+        return
+    else:
+        pass
 
 def remove_entity_instance(message: types.Message, chosen_entities: str):
     instance_id = message.text
