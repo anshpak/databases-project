@@ -27,17 +27,17 @@ def cmd_start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     buttons = ['Log in', 'Sign in', 'Exit']
     keyboard.add(*buttons)
-    inner_message = bot.send_message(message.chat.id, 'Please, select an option', reply_markup=keyboard)
+    inner_message = bot.send_message(message.chat.id, 'Please, select an option:', reply_markup=keyboard)
     bot.register_next_step_handler(inner_message, provide_entry_actions)
 
 
 def provide_entry_actions(message: types.Message):
     if message.text == 'Log in':
-        user_login_message = bot.send_message(message.chat.id, 'Enter your login',
+        user_login_message = bot.send_message(message.chat.id, 'Enter your login:',
                                               reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(user_login_message, check_login)
     elif message.text == 'Sign in':
-        user_login_message = bot.send_message(message.chat.id, 'Enter your login',
+        user_login_message = bot.send_message(message.chat.id, 'Enter your login:',
                                               reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(user_login_message, get_new_password)
     elif message.text == 'Exit':
@@ -50,7 +50,7 @@ def provide_entry_actions(message: types.Message):
 
 def get_new_password(message: types.Message):
     login = message.text
-    user_password_message = bot.send_message(message.chat.id, 'Enter your password')
+    user_password_message = bot.send_message(message.chat.id, 'Enter your password:')
     bot.register_next_step_handler(user_password_message, add_new_user, login)
 
 
@@ -63,7 +63,7 @@ def check_login(message: types.Message):
     users_query = DBUtils.get_entity_data(cur_users_session, User)
     for instance in users_query:
         if instance.login == message.text:
-            user_password_message = bot.send_message(message.chat.id, 'Enter your password')
+            user_password_message = bot.send_message(message.chat.id, 'Enter your password:')
             bot.register_next_step_handler(user_password_message, check_password)
             return
     user_login_message = bot.send_message(message.chat.id, 'Error: incorrect login. Enter your login again')
@@ -83,7 +83,7 @@ def check_password(message: types.Message):
             cur_user = instance
             bot.register_next_step_handler(message, show_menu)
             return
-    user_password_message = bot.send_message(message.chat.id, 'Error: incorrect password. Enter your password again')
+    user_password_message = bot.send_message(message.chat.id, 'Error: incorrect password. Enter your password again:')
     bot.register_next_step_handler(user_password_message, check_password)
 
 
@@ -94,7 +94,7 @@ def show_menu(message: types.Message):
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             buttons = ['Employees']
             keyboard.add(*buttons)
-            bot.send_message(message.chat.id, 'Choose an entity to manage', reply_markup=keyboard)
+            bot.send_message(message.chat.id, 'Choose an entity to manage:', reply_markup=keyboard)
             bot.register_next_step_handler(message, show_data)
     elif message.text == 'No':
         cmd_start(message)
@@ -109,7 +109,7 @@ def show_data(message: types.Message):
         dict_from_server = pretty_string(response_result.json())
         bot.send_message(message.chat.id, dict_from_server, parse_mode='Markdown')
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        buttons = ['Add a new one', 'Edit', 'Remove', 'Back to entities', 'Exit']
+        buttons = ['Add a new one', 'Edit', 'Remove', 'Back to entities', 'Log out']
         keyboard.add(*buttons)
         bot.send_message(message.chat.id, 'Please, select an option:', reply_markup=keyboard)
         bot.register_next_step_handler(message, perform_actions_with_instance, 'Employee')
@@ -207,29 +207,13 @@ def add_new_entity_instance(message: types.Message, previous_attribute, entity_n
     show_data(message)
 
 
-def show_actions_with_entity_instance(message: types.Message):
-    instance_id = message.text
-    global cur_id
-    cur_id = instance_id
-    response_result = requests.get(service_URL + '/employees' + '/' + instance_id)
-    if response_result.status_code == 200:
-        dict_from_server = pretty_string([response_result.json()])
-        bot.send_message(message.chat.id, dict_from_server, parse_mode='Markdown')
-        chosen_action_message = bot.send_message(message.chat.id, 'Please, select an option', reply_markup=keyboard)
-        bot.register_next_step_handler(chosen_action_message, perform_actions_with_instance)
-    else:
-        instance_id_message = bot.send_message(message.chat.id, 'Error: incorrect identifier was provided. Try again',
-                                               reply_markup=types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(instance_id_message, show_actions_with_entity_instance)
-
-
 def perform_actions_with_instance(message: types.Message, entity_name: str):
     if message.text == 'Add a new one':
         bot.send_message(message.chat.id, 'Please, type a new entity identifier:',
                          reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, get_new_entity_instance_name, entity_name)
     elif message.text == 'Edit':
-        bot.send_message(message.chat.id, 'Please, type a new entity identifier:',
+        bot.send_message(message.chat.id, 'Please, type an entity identifier:',
                          reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, show_entity_instance, 'Employees')
     elif message.text == 'Remove':
@@ -244,7 +228,7 @@ def perform_actions_with_instance(message: types.Message, entity_name: str):
     else:
         chosen_action_message = bot.send_message(message.chat.id, 'Please, stop typing nonsense and choose a '
                                                                   'valid option')
-        bot.register_next_step_handler(chosen_action_message, perform_actions_with_instance)
+        bot.register_next_step_handler(chosen_action_message, perform_actions_with_instance, entity_name)
 
 
 def show_entity_instance(message: types.Message, chosen_entities: str):
@@ -259,23 +243,34 @@ def show_entity_instance(message: types.Message, chosen_entities: str):
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             buttons = ['id', 'name', 'surname', 'position', 'phone number', 'photo']
             keyboard.add(*buttons)
-            field_to_edit_message = bot.send_message(message.chat.id, 'Please, select a field to edit:', reply_markup=keyboard)
+            field_to_edit_message = bot.send_message(message.chat.id, 'Please, select a field to edit:',
+                                                     reply_markup=keyboard)
         else:
             pass
     else:
         pass
-    bot.register_next_step_handler(field_to_edit_message, edit_entity_instance, chosen_entities)
+    bot.register_next_step_handler(field_to_edit_message, get_editing_field_value, chosen_entities)
 
 
-def edit_entity_instance(message: types.Message, chosen_entities: str):
+def get_editing_field_value(message: types.Message, chosen_entities):
     field = message.text
-    response_result = requests.get(service_URL + '/employees' + '/' + cur_id + '/' + field)
-    if response_result.status_code == 204:
+    value_message = bot.send_message(message.chat.id, 'Type a new value for a ' + field + ':')
+    bot.register_next_step_handler(value_message, edit_entity_instance, field, chosen_entities)
+
+
+def edit_entity_instance(message: types.Message, field, chosen_entities: str):
+    value = message.text
+    to_change_info_dict = {'field': field, 'value': value}
+    response_result = requests.put(service_URL + '/employees/edit' + '/' + cur_id,
+                                   json.dumps(to_change_info_dict),
+                                   headers={'Content-Type': 'application/json'})
+    if response_result.status_code == 200:
         message.text = chosen_entities
         show_data(message)
         return
     else:
         pass
+
 
 def remove_entity_instance(message: types.Message, chosen_entities: str):
     instance_id = message.text

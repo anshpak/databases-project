@@ -46,5 +46,16 @@ def add_entity_instance():
     return make_response("", 204)
 
 
+@app.route("/employees/edit/<int:id_>", methods=['PUT'])
+def edit_employee_by_id(id_):
+    input_data = request.get_json()
+    instance = DBUtils.get_entity_instance(employees_query, Employee, id_)
+    field = input_data['field']
+    value = input_data['value']
+    setattr(instance, field, value)
+    cur_session.commit()
+    return jsonify(instance.serialize())
+
+
 if __name__ == '__main__':
     pass
